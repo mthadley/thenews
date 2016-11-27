@@ -1,11 +1,11 @@
 module App exposing (Model, Msg(RouteChange), init, update, view, subscriptions)
 
 import Api exposing (Category)
+import CategoryPage
 import Dict exposing (Dict)
 import Header
 import Html exposing (..)
 import Html.Attributes as Attr
-import Html.Events exposing (..)
 import Item exposing (Item)
 import Nav
 import Navigation exposing (Location)
@@ -66,45 +66,9 @@ viewMain model =
                     NotFoundPage.view
 
                 Router.View category ->
-                    viewList <| getData category model.items
+                    CategoryPage.view <| getData category model.items
     in
         main_ [] [ content ]
-
-
-viewList : RemoteItems -> Html Msg
-viewList items =
-    case items of
-        Done items ->
-            section [] <| List.indexedMap viewItem items
-
-        Loading ->
-            text "Loading..."
-
-        _ ->
-            text "There doesn't seem to be anything here."
-
-
-viewItem : Int -> Item -> Html Msg
-viewItem rank item =
-    article [ Attr.class "item" ]
-        [ div [ Attr.class "item-rank" ] [ text <| "#" ++ (toString <| 1 + rank) ]
-        , div [ Attr.class "item-content" ]
-            [ h2 []
-                [ a
-                    [ Attr.href <| Maybe.withDefault "" item.url
-                    ]
-                    [ text <| Maybe.withDefault "No Title" item.title ]
-                ]
-            , footer []
-                [ detailString
-                    [ ( "By ", Just item.by )
-                    , ( "Score: ", maybeToString item.score )
-                    , ( "Comments: ", maybeToString item.descendants )
-                    ]
-                    |> text
-                ]
-            ]
-        ]
 
 
 
