@@ -1,14 +1,16 @@
 module App exposing (Model, Msg(RouteChange), init, update, view, subscriptions)
 
-import Api exposing (Category, RemoteData(..))
+import Api exposing (Category)
 import Dict exposing (Dict)
 import Header
 import Html exposing (..)
 import Html.Attributes as Attr
 import Html.Events exposing (..)
 import Item exposing (Item)
+import Nav
 import Navigation exposing (Location)
 import NotFoundPage
+import RemoteData exposing (..)
 import Router exposing (Route)
 import Util exposing (..)
 
@@ -18,11 +20,11 @@ import Util exposing (..)
 
 type alias Model =
     { currentRoute : Route
-    , items : Items
+    , items : ItemsCache
     }
 
 
-type alias Items =
+type alias ItemsCache =
     Dict String RemoteItems
 
 
@@ -50,6 +52,7 @@ view : Model -> Html Msg
 view model =
     div [ Attr.class "container" ]
         [ Header.view
+        , Nav.view model.currentRoute
         , viewMain model
         ]
 
@@ -131,16 +134,14 @@ update msg model =
                 ( { model | items = newItems, currentRoute = route }, cmd )
 
 
-updateRoute : Items -> Route -> ( Items, Cmd Msg )
+updateRoute : ItemsCache -> Route -> ( ItemsCache, Cmd Msg )
 updateRoute items route =
     case route of
         Router.View category ->
-            case (getData category items) of
-                Done _ ->
-                    items ! []
-
-                _ ->
-                    ( insertItems category Loading items, fetchItems category )
+            if RemoteData.isDone <| getData category items then
+                items ! []
+            else
+                ( insertItems category Loading items, fetchItems category )
 
         _ ->
             items ! []
@@ -151,12 +152,12 @@ fetchItems category =
     Api.send (FetchItems category) << Api.requestCategory <| category
 
 
-insertItems : Category -> RemoteItems -> Items -> Items
+insertItems : Category -> RemoteItems -> ItemsCache -> ItemsCache
 insertItems category =
     Dict.insert (Api.stringId category)
 
 
-getData : Category -> Items -> RemoteItems
+getData : Category -> ItemsCache -> RemoteItems
 getData category =
     Maybe.withDefault NotRequested << Dict.get (Api.stringId category)
 

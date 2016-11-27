@@ -80,6 +80,24 @@ label {
   margin: 0 16px 16px 0;
 }
 
+nav {
+  background-color: var(--primary);
+  box-shadow: var(--termShadow);
+  white-space: pre;
+
+  & ul {
+    display: flex;
+    list-style: none;
+    padding-left: 48px;
+    flex-wrap: wrap;
+
+    & li a {
+      color: var(--secondary);
+      margin-right: 8px;
+    }
+  }
+}
+
 .btn-group {
   display: flex;
 

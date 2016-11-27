@@ -3,14 +3,8 @@ module Api exposing (..)
 import Http exposing (Request)
 import Item exposing (Item)
 import Json.Decode as Decode
+import RemoteData exposing (RemoteData)
 import Task exposing (Task)
-
-
-type RemoteData a
-    = Loading
-    | Done a
-    | Error Http.Error
-    | NotRequested
 
 
 type Category
@@ -77,19 +71,9 @@ requestUrl endpoint =
     base ++ endpoint ++ ".json"
 
 
-resultToRemoteData : Result Http.Error a -> RemoteData a
-resultToRemoteData result =
-    case result of
-        Ok a ->
-            Done a
-
-        Err err ->
-            Error err
-
-
 send : (RemoteData a -> msg) -> Task Http.Error a -> Cmd msg
 send msg =
-    Task.attempt <| msg << resultToRemoteData
+    Task.attempt <| msg << RemoteData.fromResult
 
 
 stringId : Category -> String
