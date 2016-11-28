@@ -2,8 +2,9 @@ module CategoryPage exposing (..)
 
 import Html exposing (..)
 import Html.Attributes as Attr
-import Util exposing (detailString, maybeToString)
+import Util exposing (maybeToString)
 import Item exposing (Item)
+import ItemEntry
 import RemoteData exposing (RemoteData(..))
 
 
@@ -22,22 +23,7 @@ view items =
 
 viewCategoryItem : Int -> Item -> Html msg
 viewCategoryItem rank item =
-    article [ Attr.class "item" ]
+    div [ Attr.class "category-item" ]
         [ div [ Attr.class "item-rank" ] [ text <| "#" ++ (toString <| 1 + rank) ]
-        , div [ Attr.class "item-content" ]
-            [ h2 []
-                [ a
-                    [ Attr.href <| Maybe.withDefault "" item.url
-                    ]
-                    [ text <| Maybe.withDefault "No Title" item.title ]
-                ]
-            , footer []
-                [ detailString
-                    [ ( "By ", Just item.by )
-                    , ( "Score: ", maybeToString item.score )
-                    , ( "Comments: ", maybeToString item.descendants )
-                    ]
-                    |> text
-                ]
-            ]
+        , ItemEntry.view False item
         ]

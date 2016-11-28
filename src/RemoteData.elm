@@ -28,3 +28,29 @@ isDone data =
 
         _ ->
             False
+
+
+withDefault : a -> RemoteData a -> a
+withDefault default result =
+    case result of
+        Done data ->
+            data
+
+        _ ->
+            default
+
+
+map : (a -> b) -> RemoteData a -> RemoteData b
+map f remoteData =
+    case remoteData of
+        Done data ->
+            Done <| f data
+
+        Loading ->
+            Loading
+
+        NotRequested ->
+            NotRequested
+
+        Error err ->
+            Error err

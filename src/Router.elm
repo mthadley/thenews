@@ -7,6 +7,7 @@ import UrlParser exposing (..)
 
 type Route
     = View Category
+    | ViewItem Int
     | NotFound
 
 
@@ -20,6 +21,7 @@ parseRoute =
         , map (View New) <| s "new"
         , map (View Show) <| s "show"
         , map (View Top) <| s "top"
+        , map ViewItem <| s "item" </> int
         ]
 
 
@@ -53,5 +55,8 @@ reverse route =
 
                 NotFound ->
                     "404"
+
+                ViewItem id ->
+                    "item/" ++ (toString id)
     in
         "#" ++ path

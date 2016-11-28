@@ -1,10 +1,19 @@
 module Api exposing (..)
 
+import Result
 import Http exposing (Request)
 import Item exposing (Item)
 import Json.Decode as Decode
 import RemoteData exposing (RemoteData)
 import Task exposing (Task)
+
+
+type alias Result a =
+    Result.Result Http.Error a
+
+
+type alias Task a =
+    Task.Task Http.Error a
 
 
 type Category
@@ -43,27 +52,28 @@ categoryEndpoint category =
             "topstories"
 
 
-requestCategoryIds : Category -> Task Http.Error (List Int)
+requestCategoryIds : Category -> Task (List Int)
 requestCategoryIds category =
     Http.toTask <|
         Http.get (requestUrl <| categoryEndpoint category) <|
             Decode.list Decode.int
 
 
-requestCategory : Category -> Task Http.Error (List Item)
+requestCategory : Category -> Task (List Item)
 requestCategory category =
     requestCategoryIds category
         |> Task.andThen (requestItems << List.take 10)
 
 
-requestItems : List Int -> Task Http.Error (List Item)
+requestItems : List Int -> Task (List Item)
 requestItems =
-    Task.sequence << List.map (Http.toTask << requestItem)
+    Task.sequence << List.map requestItem
 
 
-requestItem : Int -> Request Item
+requestItem : Int -> Task Item
 requestItem id =
-    Http.get (requestUrl <| "item/" ++ (toString id)) Item.decode
+    Http.toTask <|
+        Http.get (requestUrl <| "item/" ++ (toString id)) Item.decode
 
 
 requestUrl : String -> String
@@ -71,9 +81,9 @@ requestUrl endpoint =
     base ++ endpoint ++ ".json"
 
 
-send : (RemoteData a -> msg) -> Task Http.Error a -> Cmd msg
-send msg =
-    Task.attempt <| msg << RemoteData.fromResult
+send : (Result a -> msg) -> Task a -> Cmd msg
+send =
+    Task.attempt
 
 
 stringId : Category -> String

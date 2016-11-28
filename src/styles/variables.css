@@ -2,9 +2,14 @@
   --primary: #F49E42;
   --secondary: #111;
 
+  --commentFontSize: 14px;
   --fontSize: 16px;
+  --h2FontSize: 18px;
+  --h3FontSize: 16px;
 
   --termShadow: 0 0 4px color(var(--primary) l(- 20%));
+
+  --commentLevelMargin: 8px;
 
   --fonts: {
     color: inherit;

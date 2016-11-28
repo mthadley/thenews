@@ -1,7 +1,25 @@
 module Util exposing (..)
 
+import Html exposing (..)
+import Html.Attributes as Attr
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (optional)
+import Json.Encode as Encode
+
+
+empty : Html.Html msg
+empty =
+    Html.text ""
+
+
+jsLink : Attribute msg
+jsLink =
+    Attr.href "javascript:;"
+
+
+maybeToString : Maybe a -> Maybe String
+maybeToString =
+    Maybe.map toString
 
 
 optionalMaybe : String -> Decoder a -> (Decoder (Maybe a -> b) -> Decoder b)
@@ -9,15 +27,23 @@ optionalMaybe field decoder =
     optional field (Decode.map Just decoder) Nothing
 
 
-detailString : List ( String, Maybe String ) -> String
-detailString =
-    let
-        detail ( name, value ) =
-            Maybe.map ((++) name) value
-    in
-        String.join " • " << List.filterMap detail
+pluralize : String -> String -> Int -> String
+pluralize singular plural count =
+    if count > 1 then
+        plural
+    else
+        singular
 
 
-maybeToString : Maybe a -> Maybe String
-maybeToString =
-    Maybe.map toString
+viewHtmlContent : Maybe String -> Html msg
+viewHtmlContent content =
+    case content of
+        Just content ->
+            div
+                [ Attr.class "html-content"
+                , Attr.property "innerHTML" <| Encode.string content
+                ]
+                []
+
+        Nothing ->
+            empty

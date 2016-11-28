@@ -10,6 +10,7 @@ type Type
     | Story
     | Comment
     | Poll
+    | PollOption
 
 
 type alias Item =
@@ -22,6 +23,7 @@ type alias Item =
     , parent : Maybe Int
     , parts : Maybe (List PollOpt)
     , score : Maybe Int
+    , text : Maybe String
     , time : Int
     , title : Maybe String
     , type_ : Type
@@ -51,9 +53,10 @@ decode =
         |> optionalMaybe "parent" int
         |> optionalMaybe "parts" (list pollOpt)
         |> optionalMaybe "score" int
+        |> optionalMaybe "text" string
         |> required "time" int
         |> optionalMaybe "title" string
-        |> required "type" (map decodeType string)
+        |> required "type" (Json.Decode.map decodeType string)
         |> optionalMaybe "url" string
 
 
@@ -71,6 +74,9 @@ decodeType str =
 
         "poll" ->
             Poll
+
+        "pollopt" ->
+            PollOption
 
         _ ->
             Story

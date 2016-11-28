@@ -1,15 +1,7 @@
 .item {
-  display: flex;
   margin-bottom: 16px;
-  position: relative;
 
   & h2 {
     margin: 0 0 12px;
-  }
-
-  & .item-rank {
-    flex-shrink: 0;
-    font-size: 18px;
-    width: 48px;
   }
 }

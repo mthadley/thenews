@@ -1,4 +1,7 @@
 @import "variables.css";
+
+@import "comments.css";
+@import "forms.css";
 @import "item.css";
 
 * {
@@ -18,30 +21,19 @@ a {
 body {
   background-color: var(--secondary);
   color: var(--primary);
-  font-family: 'VT323', monospace;
+  font-family: monospace;
   font-size: var(--fontSize);
   text-shadow: var(--termShadow);
 
   -webkit-tap-highlight-color: var(--primary);
 }
 
-button {
-  @apply --fonts;
-
-  background: transparent;
-  border: 2px solid var(--primary);
-  box-shadow: var(--termShadow);
-  cursor: pointer;
-  outline: none;
-  transition: opacity 0.2s ease;
-
-  &[disabled] {
-    opacity: 0.5;
-  }
+h2 {
+  font-size: var(--h2FontSize);
 }
 
-h2 {
-  font-size: 18px;
+h3 {
+  font-size: var(--h3FontSize);
 }
 
 header {
@@ -59,27 +51,6 @@ header {
   }
 }
 
-input {
-  @apply --fonts;
-
-  background: var(--primary);
-  border-width: 0;
-  box-shadow: var(--termShadow);
-  color: var(--secondary);
-  max-width: 80px;
-  outline: none;
-  padding: 4px;
-
-  &::-webkit-inner-spin-button {
-    display: none;
-  }
-}
-
-label {
-  display: inline-block;
-  margin: 0 16px 16px 0;
-}
-
 nav {
   background-color: var(--primary);
   box-shadow: var(--termShadow);
@@ -87,9 +58,9 @@ nav {
 
   & ul {
     display: flex;
+    flex-wrap: wrap;
     list-style: none;
     padding-left: 48px;
-    flex-wrap: wrap;
 
     & li a {
       color: var(--secondary);
@@ -98,11 +69,17 @@ nav {
   }
 }
 
-.btn-group {
+p {
+  margin: 12px 0;
+}
+
+.category-item {
   display: flex;
 
-  & button {
-    margin-right: 16px;
+  & .item-rank {
+    flex-shrink: 0;
+    font-size: 18px;
+    width: 48px;
   }
 }
 
@@ -111,8 +88,12 @@ nav {
   max-width: 768px;
 }
 
-.form-group {
-  margin-bottom: 16px;
+.html-content {
+  margin-bottom: 12px;
+}
+
+.show-more {
+  font-weight: bold;
 }
 
 @media (min-width: 768px) {

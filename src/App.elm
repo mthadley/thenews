@@ -7,12 +7,12 @@ import Header
 import Html exposing (..)
 import Html.Attributes as Attr
 import Item exposing (Item)
+import ItemPage
 import Nav
 import Navigation exposing (Location)
 import NotFoundPage
 import RemoteData exposing (..)
 import Router exposing (Route)
-import Util exposing (..)
 
 
 -- MODEL
@@ -21,6 +21,7 @@ import Util exposing (..)
 type alias Model =
     { currentRoute : Route
     , items : ItemsCache
+    , itemPage : ItemPage.Model
     }
 
 
@@ -40,8 +41,17 @@ init location =
 
         ( items, cmd ) =
             updateRoute Dict.empty route
+
+        ( itemPage, itemPageCmd ) =
+            ItemPage.init route
     in
-        ( { currentRoute = route, items = items }, cmd )
+        { currentRoute = route
+        , items = items
+        , itemPage = itemPage
+        }
+            ! [ cmd
+              , Cmd.map ItemPageMsg itemPageCmd
+              ]
 
 
 
@@ -67,6 +77,9 @@ viewMain model =
 
                 Router.View category ->
                     CategoryPage.view <| getData category model.items
+
+                Router.ViewItem id ->
+                    Html.map ItemPageMsg <| ItemPage.view model.itemPage
     in
         main_ [] [ content ]
 
@@ -76,17 +89,20 @@ viewMain model =
 
 
 type Msg
-    = FetchItems Category RemoteItems
+    = RecieveItems Category (Api.Result (List Item))
     | RouteChange Route
+    | ItemPageMsg ItemPage.Msg
 
 
+{-| TODO: Move ViewCategory logic to CategoryPage
+-}
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FetchItems category items ->
+        RecieveItems category items ->
             let
                 newItems =
-                    insertItems category items model.items
+                    insertItems category (RemoteData.fromResult items) model.items
             in
                 { model | items = newItems } ! []
 
@@ -94,8 +110,25 @@ update msg model =
             let
                 ( newItems, cmd ) =
                     updateRoute model.items route
+
+                ( itemPage, itemPageCmd ) =
+                    ItemPage.update (ItemPage.RouteChange route) model.itemPage
             in
-                ( { model | items = newItems, currentRoute = route }, cmd )
+                { model
+                    | currentRoute = route
+                    , items = newItems
+                    , itemPage = itemPage
+                }
+                    ! [ cmd
+                      , Cmd.map ItemPageMsg itemPageCmd
+                      ]
+
+        ItemPageMsg childMsg ->
+            let
+                ( newModel, cmd ) =
+                    ItemPage.update childMsg model.itemPage
+            in
+                ( { model | itemPage = newModel }, Cmd.map ItemPageMsg cmd )
 
 
 updateRoute : ItemsCache -> Route -> ( ItemsCache, Cmd Msg )
@@ -113,7 +146,7 @@ updateRoute items route =
 
 fetchItems : Category -> Cmd Msg
 fetchItems category =
-    Api.send (FetchItems category) << Api.requestCategory <| category
+    Api.send (RecieveItems category) << Api.requestCategory <| category
 
 
 insertItems : Category -> RemoteItems -> ItemsCache -> ItemsCache
