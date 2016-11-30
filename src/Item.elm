@@ -44,7 +44,7 @@ type alias PollOpt =
 decode : Decoder Item
 decode =
     Pipeline.decode Item
-        |> required "by" string
+        |> optional "by" string "Deleted"
         |> optional "dead" bool False
         |> optional "deleted" bool False
         |> optionalMaybe "descendants" int
