@@ -67,7 +67,7 @@ viewSubmissions items =
                     [ text "There doesn't seem to be anything here." ]
     in
         section [] <|
-            [ h2 [] [ text "Recent Submissions" ]
+            [ h2 [] [ text "▬ Recent Submissions" ]
             , div [] content
             ]
 
