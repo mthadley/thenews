@@ -20,6 +20,6 @@ view =
         [ h1 [ Attr.class "header-ascii" ] [ text splash ]
         , p [ Attr.class "header-tagline" ]
             [ text "Thanks, "
-            , a [ Attr.href "https://news.ycombinator.com" ] [ text "HN!" ]
+            , a [ Attr.href "https://news.ycombinator.com" ] [ text "YC!" ]
             ]
         ]
