@@ -1,10 +1,10 @@
 module Api exposing (..)
 
-import Result
 import Http exposing (Request)
 import Item exposing (Item)
 import Json.Decode as Decode
 import RemoteData exposing (RemoteData)
+import Result
 import Task exposing (Task)
 import User exposing (User)
 

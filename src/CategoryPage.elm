@@ -1,5 +1,6 @@
 module CategoryPage exposing (..)
 
+import Api exposing (Category)
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes as Attr
@@ -7,7 +8,6 @@ import Item exposing (Item)
 import ItemEntry
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
-import Api exposing (Category)
 
 
 -- MODEL

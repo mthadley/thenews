@@ -2,6 +2,8 @@ module UserPage exposing (Model, Msg(RouteChange), init, update, view)
 
 import Api
 import Html exposing (..)
+import Item exposing (Item)
+import ItemEntry
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
 import User exposing (User)
@@ -13,12 +15,13 @@ import Util
 
 type alias Model =
     { user : RemoteData User
+    , items : RemoteData (List Item)
     }
 
 
 init : Route -> ( Model, Cmd Msg )
 init route =
-    updateRoute (Model NotRequested) route
+    updateRoute (Model NotRequested NotRequested) route
 
 
 
@@ -31,6 +34,7 @@ view model =
         Done user ->
             section []
                 [ viewUser user
+                , viewSubmissions model.items
                 ]
 
         Loading ->
@@ -43,9 +47,29 @@ view model =
 viewUser : User -> Html Msg
 viewUser user =
     div []
-        [ h2 [] [ text user.id ]
+        [ h3 [] [ text user.id ]
         , Util.viewHtmlContent user.about
         ]
+
+
+viewSubmissions : RemoteData (List Item) -> Html Msg
+viewSubmissions items =
+    let
+        content =
+            case items of
+                Done items ->
+                    List.map (ItemEntry.view True) items
+
+                Loading ->
+                    [ text "Loading..." ]
+
+                _ ->
+                    [ text "There doesn't seem to be anything here." ]
+    in
+        section [] <|
+            [ h2 [] [ text "Recent Submissions" ]
+            , div [] content
+            ]
 
 
 
@@ -55,6 +79,7 @@ viewUser user =
 type Msg
     = RouteChange Route
     | ReceiveUser (Api.Result User)
+    | ReceiveItems (Api.Result (List Item))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,8 +88,20 @@ update msg model =
         RouteChange route ->
             updateRoute model route
 
-        ReceiveUser result ->
-            ( { model | user = RemoteData.fromResult result }, Cmd.none )
+        ReceiveUser user ->
+            ( { model
+                | user = RemoteData.fromResult user
+                , items = Loading
+              }
+            , user
+                |> Result.map .submitted
+                |> Result.withDefault []
+                |> List.take 10
+                |> fetchItems
+            )
+
+        ReceiveItems items ->
+            { model | items = RemoteData.fromResult items } ! []
 
 
 updateRoute : Model -> Route -> ( Model, Cmd Msg )
@@ -85,6 +122,11 @@ updateRoute model route =
 fetchUser : String -> Cmd Msg
 fetchUser =
     Api.send ReceiveUser << Api.requestUser
+
+
+fetchItems : List Int -> Cmd Msg
+fetchItems =
+    Api.send ReceiveItems << Api.requestItems
 
 
 getId : RemoteData User -> String
