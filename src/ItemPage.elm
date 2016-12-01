@@ -68,7 +68,7 @@ view model =
     case model.item of
         Done item ->
             div []
-                [ ItemEntry.view True item
+                [ ItemEntry.view True [ ItemEntry.By, ItemEntry.Score ] item
                 , viewCommentsContainer model item
                 ]
 

@@ -1,4 +1,4 @@
-module ItemEntry exposing (..)
+module ItemEntry exposing (DetailType(..), view)
 
 import Item exposing (Item, Type(..))
 import Html exposing (..)
@@ -7,8 +7,18 @@ import Router
 import Util exposing (maybeToString, viewHtmlContent)
 
 
-view : Bool -> Item -> Html msg
-view showText item =
+type DetailType
+    = By
+    | Score
+    | Comments
+
+
+type alias Detail =
+    ( String, Maybe String, Maybe String )
+
+
+view : Bool -> List DetailType -> Item -> Html msg
+view showText detailTypes item =
     let
         textContent =
             if showText then
@@ -20,31 +30,39 @@ view showText item =
         article [ Attr.class "item" ]
             [ h2 [] [ spanOrLink item.url <| getTitle item ]
             , textContent
-            , footer [] <|
-                viewDetails
-                    [ ( "By "
-                      , Just item.by
-                      , Just <| Router.reverse <| Router.ViewUser item.by
-                      )
-                    , ( "Score: "
-                      , maybeToString item.score
-                      , Nothing
-                      )
-                    , ( "Comments: "
-                      , maybeToString item.descendants
-                      , Just <| Router.reverse <| Router.ViewItem item.id
-                      )
-                    ]
+            , footer [] <| viewDetails item detailTypes
             ]
 
 
-viewDetails : List ( String, Maybe String, Maybe String ) -> List (Html msg)
-viewDetails =
+getDetail : Item -> DetailType -> Detail
+getDetail item type_ =
+    case type_ of
+        By ->
+            ( "By "
+            , Just item.by
+            , Just <| Router.reverse <| Router.ViewUser item.by
+            )
+
+        Score ->
+            ( "Score: "
+            , maybeToString item.score
+            , Nothing
+            )
+
+        Comments ->
+            ( "Comments: "
+            , maybeToString item.descendants
+            , Just <| Router.reverse <| Router.ViewItem item.id
+            )
+
+
+viewDetails : Item -> List DetailType -> List (Html msg)
+viewDetails item =
     let
         detail ( name, value, href ) =
             Maybe.map (spanOrLink href << (++) name) value
     in
-        List.intersperse (text " • ") << List.filterMap detail
+        List.intersperse (text " • ") << List.filterMap (detail << getDetail item)
 
 
 getTitle : Item -> String

@@ -58,7 +58,7 @@ viewSubmissions items =
         content =
             case items of
                 Done items ->
-                    List.map (ItemEntry.view True) items
+                    List.map (ItemEntry.view True [ ItemEntry.Score, ItemEntry.Comments ]) items
 
                 Loading ->
                     [ text "Loading..." ]

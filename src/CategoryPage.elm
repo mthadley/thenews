@@ -53,7 +53,7 @@ viewCategoryItem : Int -> Item -> Html msg
 viewCategoryItem rank item =
     div [ Attr.class "category-item" ]
         [ div [ Attr.class "item-rank" ] [ text <| "#" ++ (toString <| 1 + rank) ]
-        , ItemEntry.view False item
+        , ItemEntry.view False [ ItemEntry.By, ItemEntry.Score, ItemEntry.Comments ] item
         ]
 
 
