@@ -2,10 +2,11 @@ module User exposing (..)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline as Pipeline exposing (required, optional)
+import Util exposing (optionalMaybe)
 
 
 type alias User =
-    { about : String
+    { about : Maybe String
     , created : Int
     , delay : Int
     , id : String
@@ -17,7 +18,7 @@ type alias User =
 decode : Decoder User
 decode =
     Pipeline.decode User
-        |> required "about" string
+        |> optionalMaybe "about" string
         |> required "created" int
         |> optional "delay" int 0
         |> required "id" string

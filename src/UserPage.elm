@@ -48,7 +48,9 @@ viewUser : User -> Html Msg
 viewUser user =
     div []
         [ h3 [] [ text user.id ]
-        , Util.viewHtmlContent user.about
+        , user.about
+            |> Maybe.map Util.viewHtmlContent
+            |> Maybe.withDefault Util.empty
         ]
 
 

@@ -1,7 +1,6 @@
 module Nav exposing (view)
 
 import Html exposing (..)
-import Html.Attributes as Attr
 import Router exposing (Route)
 import Api exposing (Category)
 
