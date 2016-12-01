@@ -7,9 +7,9 @@ import Json.Decode.Pipeline exposing (optional)
 import Json.Encode as Encode
 
 
-empty : Html.Html msg
+empty : Html msg
 empty =
-    Html.text ""
+    text ""
 
 
 jsLink : Attribute msg
@@ -35,15 +35,10 @@ pluralize singular plural count =
         singular
 
 
-viewHtmlContent : Maybe String -> Html msg
+viewHtmlContent : String -> Html msg
 viewHtmlContent content =
-    case content of
-        Just content ->
-            div
-                [ Attr.class "html-content"
-                , Attr.property "innerHTML" <| Encode.string content
-                ]
-                []
-
-        Nothing ->
-            empty
+    div
+        [ Attr.class "html-content"
+        , Attr.property "innerHTML" <| Encode.string content
+        ]
+        []

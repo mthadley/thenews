@@ -9,6 +9,7 @@ import Nav
 import Navigation exposing (Location)
 import NotFoundPage
 import Router exposing (Route)
+import UserPage
 
 
 -- MODEL
@@ -18,6 +19,7 @@ type alias Model =
     { currentRoute : Route
     , itemPage : ItemPage.Model
     , categoryPage : CategoryPage.Model
+    , userPage : UserPage.Model
     }
 
 
@@ -32,13 +34,18 @@ init location =
 
         ( categoryPage, categoryPageCmd ) =
             CategoryPage.init route
+
+        ( userPage, userPageCmd ) =
+            UserPage.init route
     in
         { currentRoute = route
         , itemPage = itemPage
         , categoryPage = categoryPage
+        , userPage = userPage
         }
             ! [ Cmd.map ItemPageMsg itemPageCmd
               , Cmd.map CategoryPageMsg categoryPageCmd
+              , Cmd.map UserPageMsg userPageCmd
               ]
 
 
@@ -63,11 +70,14 @@ viewMain model =
                 Router.NotFound ->
                     NotFoundPage.view
 
-                Router.View category ->
+                Router.View _ ->
                     Html.map CategoryPageMsg <| CategoryPage.view model.categoryPage
 
-                Router.ViewItem id ->
+                Router.ViewItem _ ->
                     Html.map ItemPageMsg <| ItemPage.view model.itemPage
+
+                Router.ViewUser _ ->
+                    Html.map UserPageMsg <| UserPage.view model.userPage
     in
         main_ [] [ content ]
 
@@ -80,6 +90,7 @@ type Msg
     = RouteChange Route
     | CategoryPageMsg CategoryPage.Msg
     | ItemPageMsg ItemPage.Msg
+    | UserPageMsg UserPage.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -92,14 +103,19 @@ update msg model =
 
                 ( categoryPage, categoryPageCmd ) =
                     CategoryPage.update (CategoryPage.RouteChange route) model.categoryPage
+
+                ( userPage, userPageCmd ) =
+                    UserPage.update (UserPage.RouteChange route) model.userPage
             in
                 { model
                     | currentRoute = route
                     , categoryPage = categoryPage
                     , itemPage = itemPage
+                    , userPage = userPage
                 }
                     ! [ Cmd.map CategoryPageMsg categoryPageCmd
                       , Cmd.map ItemPageMsg itemPageCmd
+                      , Cmd.map UserPageMsg userPageCmd
                       ]
 
         ItemPageMsg childMsg ->
@@ -115,6 +131,13 @@ update msg model =
                     CategoryPage.update childMsg model.categoryPage
             in
                 ( { model | categoryPage = newModel }, Cmd.map CategoryPageMsg cmd )
+
+        UserPageMsg childMsg ->
+            let
+                ( newModel, cmd ) =
+                    UserPage.update childMsg model.userPage
+            in
+                ( { model | userPage = newModel }, Cmd.map UserPageMsg cmd )
 
 
 

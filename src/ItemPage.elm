@@ -138,7 +138,7 @@ viewComment comments { showCount, item, loading } =
                     , time [] [ text <| toString item.time ]
                     ]
                 ]
-            , Util.viewHtmlContent item.text
+            , Maybe.withDefault empty <| Maybe.map Util.viewHtmlContent item.text
             , viewComments comments <| List.take showCount kids
             , viewShowMore item.id delta loading
             ]
@@ -190,7 +190,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FetchComments id ->
-            if id == defaultId model.item then
+            if id == getId model.item then
                 fetchItemComment model
             else
                 fetchNestedComment id model
@@ -206,7 +206,7 @@ update msg model =
         RecieveComments id result ->
             let
                 delta =
-                    if id == defaultId model.item then
+                    if id == getId model.item then
                         pageSize
                     else
                         0
@@ -225,7 +225,7 @@ update msg model =
         RouteChange route ->
             case route of
                 Router.ViewItem id ->
-                    if RemoteData.isDone model.item && id == defaultId model.item then
+                    if RemoteData.isDone model.item && id == getId model.item then
                         model ! []
                     else
                         ( { model | item = Loading, loading = True, showCount = 0 }, fetchItem id )
@@ -278,8 +278,8 @@ foldItems =
     List.foldl (\item -> Dict.insert item.id <| Comment 0 False item)
 
 
-defaultId : RemoteData Item -> Int
-defaultId =
+getId : RemoteData Item -> Int
+getId =
     RemoteData.withDefault -1 << RemoteData.map .id
 
 

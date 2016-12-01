@@ -6,6 +6,7 @@ import Item exposing (Item)
 import Json.Decode as Decode
 import RemoteData exposing (RemoteData)
 import Task exposing (Task)
+import User exposing (User)
 
 
 type alias Result a =
@@ -79,6 +80,12 @@ requestItem id =
 requestUrl : String -> String
 requestUrl endpoint =
     base ++ endpoint ++ ".json"
+
+
+requestUser : String -> Task User
+requestUser id =
+    Http.toTask <|
+        Http.get (requestUrl <| "user/" ++ id) User.decode
 
 
 send : (Result a -> msg) -> Task a -> Cmd msg

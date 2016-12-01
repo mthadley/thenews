@@ -12,7 +12,8 @@ view showText item =
     let
         textContent =
             if showText then
-                viewHtmlContent item.text
+                Maybe.withDefault Util.empty <|
+                    Maybe.map viewHtmlContent item.text
             else
                 Util.empty
     in
@@ -23,7 +24,7 @@ view showText item =
                 viewDetails
                     [ ( "By "
                       , Just item.by
-                      , Nothing
+                      , Just <| Router.reverse <| Router.ViewUser item.by
                       )
                     , ( "Score: "
                       , maybeToString item.score
