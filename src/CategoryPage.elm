@@ -62,14 +62,14 @@ viewCategoryItem rank item =
 
 
 type Msg
-    = RecieveItems Category (Api.Result (List Item))
+    = ReceiveItems Category (Api.Result (List Item))
     | RouteChange Route
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        RecieveItems category items ->
+        ReceiveItems category items ->
             let
                 newItems =
                     insertItems category (RemoteData.fromResult items) model.items
@@ -103,7 +103,7 @@ updateRoute model route =
 
 fetchItems : Category -> Cmd Msg
 fetchItems category =
-    Api.send (RecieveItems category) << Api.requestCategory <| category
+    Api.send (ReceiveItems category) << Api.requestCategory <| category
 
 
 insertItems : Category -> RemoteItems -> ItemsCache -> ItemsCache
