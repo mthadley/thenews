@@ -132,7 +132,7 @@ viewComment comments { showCount, item, loading } =
     in
         article [ Attr.class "comment" ]
             [ h3 [ Attr.class "author" ]
-                [ a [ Attr.href <| Router.reverse <| Router.ViewUser item.by ]
+                [ a [ Router.linkTo <| Router.ViewUser item.by ]
                     [ text item.by ]
                 , small []
                     [ text <| " at "

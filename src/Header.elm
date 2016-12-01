@@ -2,6 +2,8 @@ module Header exposing (view)
 
 import Html exposing (..)
 import Html.Attributes as Attr
+import Router
+import Api
 
 
 splash : String
@@ -17,7 +19,9 @@ splash =
 view : Html msg
 view =
     header []
-        [ h1 [ Attr.class "header-ascii" ] [ text splash ]
+        [ h1 [ Attr.class "header-ascii" ]
+            [ a [ Router.linkTo <| Router.View Api.Top ] [ text splash ]
+            ]
         , p [ Attr.class "header-tagline" ]
             [ text "Thanks, "
             , a [ Attr.href "https://news.ycombinator.com" ] [ text "YC!" ]

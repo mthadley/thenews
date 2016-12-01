@@ -44,6 +44,6 @@ viewNavItem route ( name, category ) =
                 " "
     in
         li []
-            [ a [ Attr.href <| Router.reverse <| Router.View category ]
+            [ a [ Router.linkTo <| Router.View category ]
                 [ text <| indicator ++ name ]
             ]

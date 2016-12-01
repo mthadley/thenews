@@ -1,6 +1,8 @@
 module Router exposing (..)
 
 import Api exposing (Category(..))
+import Html
+import Html.Attributes as Attr
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 
@@ -65,3 +67,8 @@ reverse route =
                     "user/" ++ id
     in
         "#" ++ path
+
+
+linkTo : Route -> Html.Attribute msg
+linkTo =
+    Attr.href << reverse
