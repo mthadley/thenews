@@ -1,8 +1,9 @@
 module ItemEntry exposing (DetailType(..), view)
 
-import Item exposing (Item, Type(..))
+import DateFormat
 import Html exposing (..)
 import Html.Attributes as Attr
+import Item exposing (Item, Type(..))
 import Router
 import Util exposing (maybeToString, viewHtmlContent)
 
@@ -11,6 +12,7 @@ type DetailType
     = By
     | Score
     | Comments
+    | Created
 
 
 type alias Detail =
@@ -53,6 +55,12 @@ getDetail item type_ =
             ( "Comments: "
             , maybeToString item.descendants
             , Just <| Router.reverse <| Router.ViewItem item.id
+            )
+
+        Created ->
+            ( ""
+            , Just <| DateFormat.format item.time
+            , Nothing
             )
 
 

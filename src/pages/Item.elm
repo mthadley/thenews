@@ -1,6 +1,7 @@
 module Pages.Item exposing (Model, Msg(RouteChange), init, update, view)
 
 import Api
+import DateFormat
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes as Attr
@@ -135,8 +136,8 @@ viewComment comments { showCount, item, loading } =
                 [ a [ Router.linkTo <| Router.ViewUser item.by ]
                     [ text item.by ]
                 , small []
-                    [ text <| " at "
-                    , time [] [ text <| toString item.time ]
+                    [ text <| " on "
+                    , time [] [ text <| DateFormat.format item.time ]
                     ]
                 ]
             , Maybe.withDefault empty <| Maybe.map Util.viewHtmlContent item.text

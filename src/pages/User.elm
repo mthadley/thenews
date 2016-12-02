@@ -57,10 +57,13 @@ viewUser user =
 viewSubmissions : RemoteData (List Item) -> Html Msg
 viewSubmissions items =
     let
+        details =
+            [ ItemEntry.Score, ItemEntry.Comments, ItemEntry.Created ]
+
         content =
             case items of
                 Done items ->
-                    List.map (ItemEntry.view True [ ItemEntry.Score, ItemEntry.Comments ]) items
+                    List.map (ItemEntry.view True details) items
 
                 Loading ->
                     [ text "Loading..." ]
