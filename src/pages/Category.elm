@@ -1,4 +1,4 @@
-module CategoryPage exposing (..)
+module Pages.Category exposing (..)
 
 import Api exposing (Category)
 import Dict exposing (Dict)

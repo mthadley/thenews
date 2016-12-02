@@ -1,4 +1,4 @@
-module ItemPage exposing (Model, Msg(RouteChange), init, update, view)
+module Pages.Item exposing (Model, Msg(RouteChange), init, update, view)
 
 import Api
 import Dict exposing (Dict)

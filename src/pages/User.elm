@@ -1,4 +1,4 @@
-module UserPage exposing (Model, Msg(RouteChange), init, update, view)
+module Pages.User exposing (Model, Msg(RouteChange), init, update, view)
 
 import Api
 import Html exposing (..)

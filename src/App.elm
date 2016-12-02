@@ -1,15 +1,15 @@
 module App exposing (Model, Msg(RouteChange), init, update, view, subscriptions)
 
-import CategoryPage
 import Header
 import Html exposing (..)
 import Html.Attributes as Attr
-import ItemPage
 import Nav
 import Navigation exposing (Location)
-import NotFoundPage
+import Pages.Category as CategoryPage
+import Pages.Item as ItemPage
+import Pages.NotFound as NotFoundPage
+import Pages.User as UserPage
 import Router exposing (Route)
-import UserPage
 
 
 -- MODEL
