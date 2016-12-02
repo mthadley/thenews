@@ -77,7 +77,11 @@ update msg model =
                 newItems =
                     insertItems category (RemoteData.fromResult items) model.items
             in
-                { model | items = newItems } ! []
+                { model
+                    | items = newItems
+                    , loadText = LoadText.toggle False model.loadText
+                }
+                    ! []
 
         RouteChange route ->
             updateRoute model route
