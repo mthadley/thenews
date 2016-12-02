@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes as Attr
 import Item exposing (Item)
 import ItemEntry
+import LoadText
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
 
@@ -16,6 +17,7 @@ import Router exposing (Route)
 type alias Model =
     { category : Category
     , items : ItemsCache
+    , loadText : LoadText.Model
     }
 
 
@@ -29,7 +31,7 @@ type alias RemoteItems =
 
 init : Route -> ( Model, Cmd Msg )
 init route =
-    updateRoute (Model Api.Best Dict.empty) route
+    updateRoute (Model Api.Best Dict.empty (LoadText.init False)) route
 
 
 
@@ -43,7 +45,7 @@ view model =
             section [] <| List.indexedMap viewCategoryItem items
 
         Loading ->
-            text "Loading..."
+            LoadText.view model.loadText
 
         _ ->
             text "There doesn't seem to be anything here."
@@ -64,6 +66,7 @@ viewCategoryItem rank item =
 type Msg
     = ReceiveItems Category (Api.Result (List Item))
     | RouteChange Route
+    | LoadTextMsg LoadText.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -79,21 +82,33 @@ update msg model =
         RouteChange route ->
             updateRoute model route
 
+        LoadTextMsg childMsg ->
+            let
+                loadText =
+                    LoadText.update childMsg model.loadText
+            in
+                { model | loadText = loadText } ! []
+
 
 updateRoute : Model -> Route -> ( Model, Cmd Msg )
 updateRoute model route =
     case route of
         Router.View category ->
             let
-                ( items, cmd ) =
+                ( items, cmd, loading ) =
                     if RemoteData.isDone <| getData category model.items then
-                        model.items ! []
+                        ( model.items, Cmd.none, False )
                     else
                         ( insertItems category Loading model.items
                         , fetchItems category
+                        , True
                         )
             in
-                ( { model | items = items, category = category }
+                ( { model
+                    | items = items
+                    , category = category
+                    , loadText = LoadText.toggle loading model.loadText
+                  }
                 , cmd
                 )
 
@@ -114,3 +129,8 @@ insertItems category =
 getData : Category -> ItemsCache -> RemoteItems
 getData category =
     Maybe.withDefault NotRequested << Dict.get (Api.stringId category)
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.map LoadTextMsg <| LoadText.subscriptions model.loadText

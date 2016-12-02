@@ -145,5 +145,10 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions =
-    always Sub.none
+subscriptions model =
+    Sub.batch
+        [ Sub.map CategoryPageMsg <|
+            CategoryPage.subscriptions model.categoryPage
+        , Sub.map UserPageMsg <|
+            UserPage.subscriptions model.userPage
+        ]
