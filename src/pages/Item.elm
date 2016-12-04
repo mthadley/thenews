@@ -46,22 +46,13 @@ type alias Model =
 
 init : Route -> ( Model, Cmd Msg )
 init route =
-    let
-        ( item, cmd ) =
-            case route of
-                Router.ViewItem id ->
-                    ( Loading, fetchItem id )
-
-                _ ->
-                    ( NotRequested, Cmd.none )
-    in
+    updateRoute route
         { comments = Dict.empty
-        , item = item
+        , item = NotRequested
         , loading = False
-        , loadText = LoadText.init <| RemoteData.isLoading item
+        , loadText = LoadText.init False
         , showCount = 0
         }
-            ! [ cmd ]
 
 
 
@@ -238,22 +229,7 @@ update msg model =
                     ! []
 
         RouteChange route ->
-            case route of
-                Router.ViewItem id ->
-                    if RemoteData.isDone model.item && id == getId model.item then
-                        model ! []
-                    else
-                        ( { model
-                            | item = Loading
-                            , loading = True
-                            , showCount = 0
-                            , loadText = LoadText.toggle True model.loadText
-                          }
-                        , fetchItem id
-                        )
-
-                _ ->
-                    model ! []
+            updateRoute route model
 
         ItemLoadTextMsg childMsg ->
             { model | loadText = LoadText.update childMsg model.loadText } ! []
@@ -283,11 +259,8 @@ fetchNestedComment id model =
             Dict.get id model.comments
                 |> Maybe.map (\{ item, showCount } -> fetchComments showCount item)
                 |> Maybe.withDefault Cmd.none
-
-        comments =
-            updateLoading True id model.comments
     in
-        ( { model | comments = comments }, cmd )
+        ( { model | comments = updateLoading True id model.comments }, cmd )
 
 
 fetchItemComment : Model -> ( Model, Cmd Msg )
@@ -313,6 +286,26 @@ foldItems =
             Dict.insert item.id <|
                 Comment 0 False (LoadText.init False) item
         )
+
+
+updateRoute : Route -> Model -> ( Model, Cmd Msg )
+updateRoute route model =
+    case route of
+        Router.ViewItem id ->
+            if RemoteData.isDone model.item && id == getId model.item then
+                model ! []
+            else
+                ( { model
+                    | item = Loading
+                    , loading = True
+                    , showCount = 0
+                    , loadText = LoadText.toggle True model.loadText
+                  }
+                , fetchItem id
+                )
+
+        _ ->
+            model ! []
 
 
 getId : RemoteData Item -> Int
@@ -349,14 +342,9 @@ updateComentLoadText msg =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        mapSub id =
-            Sub.map (CommentLoadTextMsg id) << LoadText.subscriptions
-
-        commentSubscriptions =
-            model.comments
-                |> Dict.toList
-                |> List.map (\( id, { loadText } ) -> mapSub id loadText)
+        mapSub ( id, { loadText } ) =
+            Sub.map (CommentLoadTextMsg id) <| LoadText.subscriptions loadText
     in
         Sub.batch <|
             [ Sub.map ItemLoadTextMsg <| LoadText.subscriptions model.loadText ]
-                ++ commentSubscriptions
+                ++ (List.map mapSub <| Dict.toList model.comments)

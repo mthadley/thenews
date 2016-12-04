@@ -30,16 +30,6 @@ isDone data =
             False
 
 
-isLoading : RemoteData a -> Bool
-isLoading data =
-    case data of
-        Loading ->
-            True
-
-        _ ->
-            False
-
-
 withDefault : a -> RemoteData a -> a
 withDefault default result =
     case result of
