@@ -16,6 +16,11 @@ formatDate date =
         ++ ", "
         ++ (toString <| Date.year date)
         ++ " at "
-        ++ (toString <| Date.hour date)
+        ++ (paddedString <| Date.hour date)
         ++ ":"
-        ++ (toString <| Date.minute date)
+        ++ (paddedString <| Date.minute date)
+
+
+paddedString : Int -> String
+paddedString =
+    String.padLeft 2 '0' << toString
