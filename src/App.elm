@@ -151,4 +151,6 @@ subscriptions model =
             CategoryPage.subscriptions model.categoryPage
         , Sub.map UserPageMsg <|
             UserPage.subscriptions model.userPage
+        , Sub.map ItemPageMsg <|
+            ItemPage.subscriptions model.itemPage
         ]

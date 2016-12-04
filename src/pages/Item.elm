@@ -1,4 +1,4 @@
-module Pages.Item exposing (Model, Msg(RouteChange), init, update, view)
+module Pages.Item exposing (Model, Msg(RouteChange), init, update, view, subscriptions)
 
 import Api
 import DateFormat
@@ -9,6 +9,7 @@ import Html.Events exposing (onClick)
 import Item exposing (Item)
 import ItemEntry
 import Json.Encode as Encode
+import LoadText
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
 import Util exposing (empty)
@@ -25,6 +26,7 @@ pageSize =
 type alias Comment =
     { showCount : Int
     , loading : Bool
+    , loadText : LoadText.Model
     , item : Item
     }
 
@@ -37,6 +39,7 @@ type alias Model =
     { comments : Comments
     , item : RemoteData Item
     , showCount : Int
+    , loadText : LoadText.Model
     , loading : Bool
     }
 
@@ -54,7 +57,8 @@ init route =
     in
         { comments = Dict.empty
         , item = item
-        , loading = True
+        , loading = False
+        , loadText = LoadText.init <| RemoteData.isLoading item
         , showCount = 0
         }
             ! [ cmd ]
@@ -74,14 +78,14 @@ view model =
                 ]
 
         Loading ->
-            text "Loading..."
+            LoadText.view model.loadText
 
         _ ->
             text "There doesn't seem to be anything here."
 
 
 viewCommentsContainer : Model -> Item -> Html Msg
-viewCommentsContainer { comments, loading, showCount } item =
+viewCommentsContainer { comments, loadText, loading, showCount } item =
     case item.kids of
         Just kids ->
             let
@@ -104,7 +108,7 @@ viewCommentsContainer { comments, loading, showCount } item =
                                 ++ ")"
                         ]
                     , viewComments comments <| List.take showCount kids
-                    , viewShowMore item.id delta loading
+                    , viewShowMore item.id delta loading loadText
                     ]
 
         Nothing ->
@@ -123,7 +127,7 @@ viewComments comments ids =
 
 
 viewComment : Comments -> Comment -> Html Msg
-viewComment comments { showCount, item, loading } =
+viewComment comments { showCount, item, loadText, loading } =
     let
         kids =
             Maybe.withDefault [] item.kids
@@ -142,14 +146,14 @@ viewComment comments { showCount, item, loading } =
                 ]
             , Maybe.withDefault empty <| Maybe.map Util.viewHtmlContent item.text
             , viewComments comments <| List.take showCount kids
-            , viewShowMore item.id delta loading
+            , viewShowMore item.id delta loading loadText
             ]
 
 
-viewShowMore : Int -> Int -> Bool -> Html Msg
-viewShowMore id count loading =
+viewShowMore : Int -> Int -> Bool -> LoadText.Model -> Html Msg
+viewShowMore id count loading loadText =
     if loading then
-        span [ Attr.class "show-more" ] [ text "Loading..." ]
+        LoadText.view loadText
     else if count > 0 then
         a
             [ Attr.class "show-more"
@@ -186,6 +190,8 @@ type Msg
     | ReceiveItem (Api.Result Item)
     | ReceiveComments Int (Api.Result (List Item))
     | RouteChange Route
+    | ItemLoadTextMsg LoadText.Msg
+    | CommentLoadTextMsg Int LoadText.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -203,7 +209,13 @@ update msg model =
                     Result.withDefault Cmd.none <|
                         Result.map (fetchComments model.showCount) item
             in
-                ( { model | item = RemoteData.fromResult item }, cmd )
+                ( { model
+                    | item = RemoteData.fromResult item
+                    , loading = True
+                    , loadText = LoadText.toggle True model.loadText
+                  }
+                , cmd
+                )
 
         ReceiveComments id result ->
             let
@@ -220,6 +232,7 @@ update msg model =
                             |> updateCount id
                             |> updateLoading False id
                     , loading = False
+                    , loadText = LoadText.toggle False model.loadText
                     , showCount = model.showCount + delta
                 }
                     ! []
@@ -230,10 +243,23 @@ update msg model =
                     if RemoteData.isDone model.item && id == getId model.item then
                         model ! []
                     else
-                        ( { model | item = Loading, loading = True, showCount = 0 }, fetchItem id )
+                        ( { model
+                            | item = Loading
+                            , loading = True
+                            , showCount = 0
+                            , loadText = LoadText.toggle True model.loadText
+                          }
+                        , fetchItem id
+                        )
 
                 _ ->
                     model ! []
+
+        ItemLoadTextMsg childMsg ->
+            { model | loadText = LoadText.update childMsg model.loadText } ! []
+
+        CommentLoadTextMsg id childMsg ->
+            { model | comments = updateComentLoadText childMsg id model.comments } ! []
 
 
 fetchItem : Int -> Cmd Msg
@@ -272,12 +298,21 @@ fetchItemComment model =
                 |> RemoteData.map (fetchComments model.showCount)
                 |> RemoteData.withDefault Cmd.none
     in
-        ( { model | loading = True }, cmd )
+        ( { model
+            | loading = True
+            , loadText = LoadText.toggle True model.loadText
+          }
+        , cmd
+        )
 
 
 foldItems : Comments -> List Item -> Comments
 foldItems =
-    List.foldl (\item -> Dict.insert item.id <| Comment 0 False item)
+    List.foldl
+        (\item ->
+            Dict.insert item.id <|
+                Comment 0 False (LoadText.init False) item
+        )
 
 
 getId : RemoteData Item -> Int
@@ -297,4 +332,31 @@ updateCount =
 
 updateLoading : Bool -> Int -> Comments -> Comments
 updateLoading loading =
-    updateComment (\comment -> { comment | loading = loading })
+    updateComment
+        (\comment ->
+            { comment
+                | loading = loading
+                , loadText = LoadText.toggle loading comment.loadText
+            }
+        )
+
+
+updateComentLoadText : LoadText.Msg -> Int -> Comments -> Comments
+updateComentLoadText msg =
+    updateComment (\comment -> { comment | loadText = LoadText.update msg comment.loadText })
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    let
+        mapSub id =
+            Sub.map (CommentLoadTextMsg id) << LoadText.subscriptions
+
+        commentSubscriptions =
+            model.comments
+                |> Dict.toList
+                |> List.map (\( id, { loadText } ) -> mapSub id loadText)
+    in
+        Sub.batch <|
+            [ Sub.map ItemLoadTextMsg <| LoadText.subscriptions model.loadText ]
+                ++ commentSubscriptions
