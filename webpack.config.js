@@ -1,3 +1,19 @@
+var webpack = require('webpack');
+
+var plugins = [];
+
+if (process.env.TARGET === 'prod') {
+  plugins.push(
+    new webpack.optimize.UglifyJsPlugin(
+      {
+        compress: {
+          warnings: false
+        }
+      }
+    )
+  );
+}
+
 module.exports = {
   entry: './src/index.js',
 
@@ -5,6 +21,8 @@ module.exports = {
     path: './dist',
     filename: 'index.js'
   },
+
+  plugins: plugins,
 
   resolve: {
     modulesDirectories: ['node_modules'],

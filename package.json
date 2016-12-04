@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": "https://github.com/mthadley/thenews",
   "scripts": {
-    "build": "webpack",
+    "build": "TARGET=prod webpack",
     "pages": "npm run build && gh-pages -d dist",
     "watch": "webpack --watch",
     "dev": "webpack-dev-server --port 3000"
