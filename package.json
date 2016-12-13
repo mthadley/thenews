@@ -9,7 +9,7 @@
     "pages": "npm run build && gh-pages -d dist",
     "watch": "webpack --watch",
     "dev": "webpack-dev-server --port 3000",
-    "test": "elm-test"
+    "test": "TZ='Europe/London' elm-test"
   },
   "author": "Michael Hadley",
   "license": "MIT",
