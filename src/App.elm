@@ -23,12 +23,9 @@ type alias Model =
     }
 
 
-init : Location -> ( Model, Cmd Msg )
-init location =
+init : Route -> ( Model, Cmd Msg )
+init route =
     let
-        route =
-            Router.parseLocation location
-
         ( itemPage, itemPageCmd ) =
             ItemPage.init route
 

@@ -9,7 +9,7 @@ main : Program Never Model Msg
 main =
     Navigation.program
         (App.RouteChange << Router.parseLocation)
-        { init = init
+        { init = init << Router.parseLocation
         , view = view
         , update = update
         , subscriptions = subscriptions

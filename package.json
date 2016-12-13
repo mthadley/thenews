@@ -8,7 +8,8 @@
     "build": "TARGET=prod webpack",
     "pages": "npm run build && gh-pages -d dist",
     "watch": "webpack --watch",
-    "dev": "webpack-dev-server --port 3000"
+    "dev": "webpack-dev-server --port 3000",
+    "test": "elm-test"
   },
   "author": "Michael Hadley",
   "license": "MIT",
