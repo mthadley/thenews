@@ -8,11 +8,10 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Item exposing (Item)
 import ItemEntry
-import Json.Encode as Encode
 import LoadText
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
-import Util exposing (empty)
+import Util
 
 
 -- MODEL
@@ -103,7 +102,7 @@ viewCommentsContainer { comments, loadText, loading, showCount } item =
                     ]
 
         Nothing ->
-            empty
+            Util.empty
 
 
 viewComments : Comments -> List Int -> Html Msg
@@ -112,7 +111,7 @@ viewComments comments ids =
         viewHelper id =
             Dict.get id comments
                 |> Maybe.map (viewComment comments)
-                |> Maybe.withDefault empty
+                |> Maybe.withDefault Util.empty
     in
         div [ Attr.class "comment-level" ] <| List.map viewHelper ids
 
@@ -135,7 +134,7 @@ viewComment comments { showCount, item, loadText, loading } =
                     , time [] [ text <| DateFormat.format item.time ]
                     ]
                 ]
-            , Maybe.withDefault empty <| Maybe.map Util.viewHtmlContent item.text
+            , Maybe.withDefault Util.empty <| Maybe.map Util.viewHtmlContent item.text
             , viewComments comments <| List.take showCount kids
             , viewShowMore item.id delta loading loadText
             ]
@@ -154,7 +153,7 @@ viewShowMore id count loading loadText =
             [ text <| "▬ " ++ (toString count) ++ getReplyText count
             ]
     else
-        empty
+        Util.empty
 
 
 getCommentsTitle : Item.Type -> String

@@ -4,7 +4,6 @@ import Header
 import Html exposing (..)
 import Html.Attributes as Attr
 import Nav
-import Navigation exposing (Location)
 import Pages.Category as CategoryPage
 import Pages.Item as ItemPage
 import Pages.NotFound as NotFoundPage

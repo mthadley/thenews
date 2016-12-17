@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.Attributes as Attr
 import Item exposing (Item, Type(..))
 import Router
-import Util exposing (maybeToString, viewHtmlContent)
+import Util exposing (maybeToString)
 
 
 type DetailType
@@ -25,7 +25,7 @@ view showText detailTypes item =
         textContent =
             if showText then
                 Maybe.withDefault Util.empty <|
-                    Maybe.map viewHtmlContent item.text
+                    Maybe.map Util.viewHtmlContent item.text
             else
                 Util.empty
     in
