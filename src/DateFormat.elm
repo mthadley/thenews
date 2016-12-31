@@ -4,8 +4,8 @@ import Date exposing (Date)
 
 
 format : Int -> String
-format time =
-    formatDate <| Date.fromTime <| toFloat <| time * 1000
+format =
+    formatDate << Date.fromTime << toFloat << (*) 1000
 
 
 formatDate : Date -> String

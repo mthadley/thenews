@@ -54,9 +54,9 @@ categoryEndpoint category =
 
 requestCategoryIds : Category -> Task (List Int)
 requestCategoryIds category =
-    Http.toTask <|
-        Http.get (requestUrl <| categoryEndpoint category) <|
-            Decode.list Decode.int
+    Decode.list Decode.int
+        |> Http.get (requestUrl <| categoryEndpoint category)
+        |> Http.toTask
 
 
 requestCategory : Category -> Task (List Item)

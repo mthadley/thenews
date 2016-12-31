@@ -94,8 +94,7 @@ viewCommentsContainer { comments, loadText, loading, showCount } item =
                                 ++ (getReplyText count)
                                 ++ ", "
                                 ++ (toString <| Maybe.withDefault 0 item.descendants)
-                                ++ " Total"
-                                ++ ")"
+                                ++ " Total)"
                         ]
                     , viewComments comments <| List.take showCount kids
                     , viewShowMore item.id delta loading loadText
@@ -319,23 +318,24 @@ updateComment f id =
 
 updateCount : Int -> Comments -> Comments
 updateCount =
-    updateComment (\comment -> { comment | showCount = comment.showCount + pageSize })
+    updateComment <|
+        \comment -> { comment | showCount = comment.showCount + pageSize }
 
 
 updateLoading : Bool -> Int -> Comments -> Comments
 updateLoading loading =
-    updateComment
-        (\comment ->
+    updateComment <|
+        \comment ->
             { comment
                 | loading = loading
                 , loadText = LoadText.toggle loading comment.loadText
             }
-        )
 
 
 updateComentLoadText : LoadText.Msg -> Int -> Comments -> Comments
 updateComentLoadText msg =
-    updateComment (\comment -> { comment | loadText = LoadText.update msg comment.loadText })
+    updateComment <|
+        \comment -> { comment | loadText = LoadText.update msg comment.loadText }
 
 
 subscriptions : Model -> Sub Msg
