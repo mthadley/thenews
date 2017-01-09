@@ -294,7 +294,8 @@ updateRoute route model =
                 model ! []
             else
                 ( { model
-                    | item = Loading
+                    | comments = Dict.empty
+                    , item = Loading
                     , loading = True
                     , showCount = 0
                     , loadText = LoadText.toggle True model.loadText
