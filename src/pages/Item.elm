@@ -259,7 +259,7 @@ update msg model =
             { model | comments = updateComentLoadText childMsg id model.comments } ! []
 
         ToggleHide id ->
-            { model | comments = updateHide id model.comments } ! []
+            { model | comments = updateCollapsed id model.comments } ! []
 
 
 fetchItem : Int -> Cmd Msg
@@ -364,8 +364,8 @@ updateLoading loading =
             }
 
 
-updateHide : Int -> Comments -> Comments
-updateHide =
+updateCollapsed : Int -> Comments -> Comments
+updateCollapsed =
     updateComment <|
         \comment -> { comment | collapsed = not comment.collapsed }
 
