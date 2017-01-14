@@ -42,3 +42,11 @@ viewHtmlContent content =
         , Attr.property "innerHTML" <| Encode.string content
         ]
         []
+
+
+viewIf : Bool -> Html msg -> Html msg
+viewIf condition content =
+    if condition then
+        content
+    else
+        empty

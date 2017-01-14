@@ -135,17 +135,13 @@ viewComment comments { collapsed, showCount, item, loadText, loading } =
                     ]
                 ]
             , Maybe.withDefault Util.empty <| Maybe.map Util.viewHtmlContent item.text
-            , if showCount > 0 then
+            , Util.viewIf (showCount > 0) <|
                 viewHider collapsed item.id
-              else
-                Util.empty
-            , if not collapsed then
+            , Util.viewIf (not collapsed) <|
                 div []
                     [ viewComments comments <| List.take showCount kids
                     , viewShowMore item.id delta loading loadText
                     ]
-              else
-                Util.empty
             ]
 
 

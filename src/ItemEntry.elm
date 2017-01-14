@@ -21,19 +21,13 @@ type alias Detail =
 
 view : Bool -> List DetailType -> Item -> Html msg
 view showText detailTypes item =
-    let
-        textContent =
-            if showText then
-                Maybe.withDefault Util.empty <|
-                    Maybe.map Util.viewHtmlContent item.text
-            else
-                Util.empty
-    in
-        article [ Attr.class "item" ]
-            [ h2 [] [ spanOrLink item.url <| getTitle item ]
-            , textContent
-            , footer [] <| viewDetails item detailTypes
-            ]
+    article [ Attr.class "item" ]
+        [ h2 [] [ spanOrLink item.url <| getTitle item ]
+        , Util.viewIf showText <|
+            Maybe.withDefault Util.empty <|
+                Maybe.map Util.viewHtmlContent item.text
+        , footer [] <| viewDetails item detailTypes
+        ]
 
 
 getDetail : Item -> DetailType -> Detail
