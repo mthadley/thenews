@@ -50,3 +50,8 @@ viewIf condition content =
         content
     else
         empty
+
+
+viewMaybe : (a -> Html msg) -> Maybe a -> Html msg
+viewMaybe f =
+    Maybe.withDefault empty << Maybe.map f

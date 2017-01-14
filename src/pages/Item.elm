@@ -110,8 +110,7 @@ viewComments comments ids =
     let
         viewHelper id =
             Dict.get id comments
-                |> Maybe.map (viewComment comments)
-                |> Maybe.withDefault Util.empty
+                |> Util.viewMaybe (viewComment comments)
     in
         div [ Attr.class "comment-level" ] <| List.map viewHelper ids
 
@@ -130,11 +129,11 @@ viewComment comments { collapsed, showCount, item, loadText, loading } =
                 [ a [ Router.linkTo <| Router.ViewUser item.by ]
                     [ text item.by ]
                 , small []
-                    [ text <| " on "
+                    [ text " on "
                     , time [] [ text <| DateFormat.format item.time ]
                     ]
                 ]
-            , Maybe.withDefault Util.empty <| Maybe.map Util.viewHtmlContent item.text
+            , Util.viewMaybe Util.viewHtmlContent item.text
             , Util.viewIf (showCount > 0) <|
                 viewHider collapsed item.id
             , Util.viewIf (not collapsed) <|

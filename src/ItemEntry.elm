@@ -24,8 +24,7 @@ view showText detailTypes item =
     article [ Attr.class "item" ]
         [ h2 [] [ spanOrLink item.url <| getTitle item ]
         , Util.viewIf showText <|
-            Maybe.withDefault Util.empty <|
-                Maybe.map Util.viewHtmlContent item.text
+            Util.viewMaybe Util.viewHtmlContent item.text
         , footer [] <| viewDetails item detailTypes
         ]
 
