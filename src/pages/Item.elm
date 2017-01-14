@@ -23,7 +23,8 @@ pageSize =
 
 
 type alias Comment =
-    { showCount : Int
+    { collapsed : Bool
+    , showCount : Int
     , loading : Bool
     , loadText : LoadText.Model
     , item : Item
@@ -116,7 +117,7 @@ viewComments comments ids =
 
 
 viewComment : Comments -> Comment -> Html Msg
-viewComment comments { showCount, item, loadText, loading } =
+viewComment comments { collapsed, showCount, item, loadText, loading } =
     let
         kids =
             Maybe.withDefault [] item.kids
@@ -134,9 +135,29 @@ viewComment comments { showCount, item, loadText, loading } =
                     ]
                 ]
             , Maybe.withDefault Util.empty <| Maybe.map Util.viewHtmlContent item.text
-            , viewComments comments <| List.take showCount kids
-            , viewShowMore item.id delta loading loadText
+            , if showCount > 0 then
+                viewHider collapsed item.id
+              else
+                Util.empty
+            , if not collapsed then
+                div []
+                    [ viewComments comments <| List.take showCount kids
+                    , viewShowMore item.id delta loading loadText
+                    ]
+              else
+                Util.empty
             ]
+
+
+viewHider : Bool -> Int -> Html Msg
+viewHider collapsed id =
+    viewShowLink (ToggleHide id)
+        [ text <|
+            if collapsed then
+                "Show Replies [+]"
+            else
+                "Hide Replies [-]"
+        ]
 
 
 viewShowMore : Int -> Int -> Bool -> LoadText.Model -> Html Msg
@@ -144,15 +165,16 @@ viewShowMore id count loading loadText =
     if loading then
         LoadText.view loadText
     else if count > 0 then
-        a
-            [ Attr.class "show-more"
-            , Util.jsLink
-            , onClick <| FetchComments id
-            ]
+        viewShowLink (FetchComments id)
             [ text <| "▬ " ++ (toString count) ++ getReplyText count
             ]
     else
         Util.empty
+
+
+viewShowLink : Msg -> List (Html Msg) -> Html Msg
+viewShowLink msg =
+    a [ Attr.class "show-more", Util.jsLink, onClick msg ]
 
 
 getCommentsTitle : Item.Type -> String
@@ -181,6 +203,7 @@ type Msg
     | RouteChange Route
     | ItemLoadTextMsg LoadText.Msg
     | CommentLoadTextMsg Int LoadText.Msg
+    | ToggleHide Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -235,6 +258,9 @@ update msg model =
         CommentLoadTextMsg id childMsg ->
             { model | comments = updateComentLoadText childMsg id model.comments } ! []
 
+        ToggleHide id ->
+            { model | comments = updateHide id model.comments } ! []
+
 
 fetchItem : Int -> Cmd Msg
 fetchItem =
@@ -282,7 +308,12 @@ foldItems =
     List.foldl
         (\item ->
             Dict.insert item.id <|
-                Comment 0 False (LoadText.init False) item
+                { collapsed = False
+                , showCount = 0
+                , loading = False
+                , loadText = LoadText.init False
+                , item = item
+                }
         )
 
 
@@ -331,6 +362,12 @@ updateLoading loading =
                 | loading = loading
                 , loadText = LoadText.toggle loading comment.loadText
             }
+
+
+updateHide : Int -> Comments -> Comments
+updateHide =
+    updateComment <|
+        \comment -> { comment | collapsed = not comment.collapsed }
 
 
 updateComentLoadText : LoadText.Msg -> Int -> Comments -> Comments
