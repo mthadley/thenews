@@ -1,5 +1,8 @@
 module App exposing (Model, Msg(RouteChange), init, update, view, subscriptions)
 
+import Animation
+import Animation.Messenger
+import Animation.Spring.Presets as Presets
 import Header
 import Html exposing (..)
 import Html.Attributes as Attr
@@ -16,9 +19,11 @@ import Router exposing (Route)
 
 type alias Model =
     { currentRoute : Route
+    , nextRoute : Route
     , itemPage : ItemPage.Model
     , categoryPage : CategoryPage.Model
     , userPage : UserPage.Model
+    , style : Animation.Messenger.State Msg
     }
 
 
@@ -33,11 +38,16 @@ init route =
 
         ( userPage, userPageCmd ) =
             UserPage.init route
+
+        style =
+            Animation.style <| animationProps In
     in
         { currentRoute = route
+        , nextRoute = route
         , itemPage = itemPage
         , categoryPage = categoryPage
         , userPage = userPage
+        , style = style
         }
             ! [ Cmd.map ItemPageMsg itemPageCmd
               , Cmd.map CategoryPageMsg categoryPageCmd
@@ -53,7 +63,7 @@ view : Model -> Html Msg
 view model =
     div [ Attr.class "container" ]
         [ Header.view
-        , Nav.view model.currentRoute
+        , Nav.view model.nextRoute
         , viewMain model
         ]
 
@@ -75,7 +85,7 @@ viewMain model =
                 Router.ViewUser _ ->
                     Html.map UserPageMsg <| UserPage.view model.userPage
     in
-        main_ [] [ content ]
+        main_ (Animation.render model.style) [ content ]
 
 
 
@@ -83,7 +93,9 @@ viewMain model =
 
 
 type Msg
-    = RouteChange Route
+    = ActivateRoute Route
+    | AnimationMsg Animation.Msg
+    | RouteChange Route
     | CategoryPageMsg CategoryPage.Msg
     | ItemPageMsg ItemPage.Msg
     | UserPageMsg UserPage.Msg
@@ -93,6 +105,21 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         RouteChange route ->
+            if route == model.currentRoute then
+                model ! []
+            else
+                { model
+                    | nextRoute = route
+                    , style =
+                        Animation.interrupt
+                            [ animate Out
+                            , Animation.Messenger.send <| ActivateRoute route
+                            ]
+                            model.style
+                }
+                    ! []
+
+        ActivateRoute route ->
             let
                 ( itemPage, itemPageCmd ) =
                     ItemPage.update (ItemPage.RouteChange route) model.itemPage
@@ -108,11 +135,19 @@ update msg model =
                     , categoryPage = categoryPage
                     , itemPage = itemPage
                     , userPage = userPage
+                    , style = Animation.interrupt [ animate In ] model.style
                 }
                     ! [ Cmd.map CategoryPageMsg categoryPageCmd
                       , Cmd.map ItemPageMsg itemPageCmd
                       , Cmd.map UserPageMsg userPageCmd
                       ]
+
+        AnimationMsg animationMsg ->
+            let
+                ( style, cmd ) =
+                    Animation.Messenger.update animationMsg model.style
+            in
+                ( { model | style = style }, cmd )
 
         ItemPageMsg childMsg ->
             let
@@ -136,6 +171,30 @@ update msg model =
                 ( { model | userPage = newModel }, Cmd.map UserPageMsg cmd )
 
 
+type Animate
+    = In
+    | Out
+
+
+animate : Animate -> Animation.Messenger.Step Msg
+animate =
+    Animation.toWith (Animation.spring Presets.zippy) << animationProps
+
+
+animationProps : Animate -> List Animation.Property
+animationProps animate =
+    case animate of
+        In ->
+            [ Animation.opacity 1
+            , Animation.translate (Animation.px 0) (Animation.px 0)
+            ]
+
+        Out ->
+            [ Animation.opacity 0
+            , Animation.translate (Animation.px 0) (Animation.px 12)
+            ]
+
+
 
 -- SUBS
 
@@ -149,4 +208,5 @@ subscriptions model =
             UserPage.subscriptions model.userPage
         , Sub.map ItemPageMsg <|
             ItemPage.subscriptions model.itemPage
+        , Animation.subscription AnimationMsg [ model.style ]
         ]
