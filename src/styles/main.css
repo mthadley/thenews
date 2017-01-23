@@ -19,7 +19,6 @@ a {
 }
 
 body {
-  background-color: var(--secondary);
   color: var(--primary);
   font-family: monospace;
   font-size: var(--fontSize);
@@ -34,6 +33,25 @@ h2 {
 
 h3 {
   font-size: var(--h3FontSize);
+}
+
+html {
+  background-color: var(--secondary);
+  min-height: 100%;
+  position: relative;
+
+  /* scanlines effect */
+  &:before {
+    background: linear-gradient(color(var(--secondary) l(50%)) 50%, transparent 50%);
+    background-repeat: repeat-y;
+    background-size: 100% 4px;
+    content: '';
+    height: 100%;
+    opacity: 0.1;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+  }
 }
 
 header {
