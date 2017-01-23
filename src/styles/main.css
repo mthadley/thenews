@@ -19,26 +19,16 @@ a {
 }
 
 body {
+  background-color: var(--secondary);
   color: var(--primary);
   font-family: monospace;
   font-size: var(--fontSize);
+  margin: 0;
+  min-height: 100vh;
+  position: relative;
   text-shadow: var(--termShadow);
 
   -webkit-tap-highlight-color: var(--primary);
-}
-
-h2 {
-  font-size: var(--h2FontSize);
-}
-
-h3 {
-  font-size: var(--h3FontSize);
-}
-
-html {
-  background-color: var(--secondary);
-  min-height: 100%;
-  position: relative;
 
   /* scanlines effect */
   &:before {
@@ -52,6 +42,18 @@ html {
     position: absolute;
     width: 100%;
   }
+}
+
+h2 {
+  font-size: var(--h2FontSize);
+}
+
+h3 {
+  font-size: var(--h3FontSize);
+}
+
+html {
+  background-color: color(var(--secondary) l(5%));
 }
 
 header {
@@ -104,6 +106,7 @@ p {
 .container {
   margin: 0 auto;
   max-width: 768px;
+  padding: 8px;
 }
 
 .html-content {
