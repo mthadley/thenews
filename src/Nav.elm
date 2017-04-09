@@ -17,13 +17,15 @@ isActive route category =
 
 navLinks : List ( String, Category )
 navLinks =
-    [ ( "Top", Api.Top )
-    , ( "Best", Api.Best )
-    , ( "Show", Api.Show )
-    , ( "New", Api.New )
-    , ( "Ask", Api.Ask )
-    , ( "Job", Api.Job )
-    ]
+    List.map
+        (\category -> ( Api.label category, category ))
+        [ Api.Top
+        , Api.Best
+        , Api.Show
+        , Api.New
+        , Api.Ask
+        , Api.Job
+        ]
 
 
 view : Route -> Html msg

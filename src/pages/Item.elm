@@ -12,6 +12,7 @@ import LoadText
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
 import Util
+import PageTitle
 
 
 -- MODEL
@@ -210,19 +211,24 @@ update msg model =
             else
                 fetchNestedComment id model
 
-        ReceiveItem item ->
+        ReceiveItem result ->
             let
+                item =
+                    RemoteData.fromResult result
+
                 cmd =
-                    Result.withDefault Cmd.none <|
-                        Result.map (fetchComments model.showCount) item
+                    item
+                        |> RemoteData.map (fetchComments model.showCount)
+                        |> RemoteData.withDefault Cmd.none
             in
-                ( { model
-                    | item = RemoteData.fromResult item
+                { model
+                    | item = item
                     , loading = True
                     , loadText = LoadText.toggle True model.loadText
-                  }
-                , cmd
-                )
+                }
+                    ! [ cmd
+                      , setTitle item
+                      ]
 
         ReceiveComments id result ->
             let
@@ -317,17 +323,18 @@ updateRoute route model =
     case route of
         Router.ViewItem id ->
             if RemoteData.isDone model.item && id == getId model.item then
-                model ! []
+                ( model, setTitle model.item )
             else
-                ( { model
+                { model
                     | comments = Dict.empty
                     , item = Loading
                     , loading = True
                     , showCount = 0
                     , loadText = LoadText.toggle True model.loadText
-                  }
-                , fetchItem id
-                )
+                }
+                    ! [ fetchItem id
+                      , PageTitle.set "Loading"
+                      ]
 
         _ ->
             model ! []
@@ -369,6 +376,18 @@ updateComentLoadText : LoadText.Msg -> Int -> Comments -> Comments
 updateComentLoadText msg =
     updateComment <|
         \comment -> { comment | loadText = LoadText.update msg comment.loadText }
+
+
+getTitle : Item -> String
+getTitle { id, title } =
+    Maybe.withDefault (toString id) title
+
+
+setTitle : RemoteData Item -> Cmd msg
+setTitle item =
+    item
+        |> RemoteData.map (PageTitle.set << getTitle)
+        |> RemoteData.withDefault Cmd.none
 
 
 subscriptions : Model -> Sub Msg

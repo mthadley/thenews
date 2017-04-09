@@ -11,6 +11,7 @@ import Pages.Category as CategoryPage
 import Pages.Item as ItemPage
 import Pages.NotFound as NotFoundPage
 import Pages.User as UserPage
+import PageTitle
 import Router exposing (Route)
 
 
@@ -52,6 +53,7 @@ init route =
             ! [ Cmd.map ItemPageMsg itemPageCmd
               , Cmd.map CategoryPageMsg categoryPageCmd
               , Cmd.map UserPageMsg userPageCmd
+              , maybeSetNotFoundTitle route
               ]
 
 
@@ -117,7 +119,7 @@ update msg model =
                             ]
                             model.style
                 }
-                    ! []
+                    ! [ maybeSetNotFoundTitle route ]
 
         ActivateRoute route ->
             let
@@ -193,6 +195,16 @@ animationProps animate =
             [ Animation.opacity 0
             , Animation.translate (Animation.px 0) (Animation.px 12)
             ]
+
+
+maybeSetNotFoundTitle : Route -> Cmd msg
+maybeSetNotFoundTitle route =
+    case route of
+        Router.NotFound ->
+            PageTitle.set "404 Not Found"
+
+        _ ->
+            Cmd.none
 
 
 

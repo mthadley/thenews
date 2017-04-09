@@ -4,11 +4,12 @@ import Api
 import Html exposing (..)
 import Item exposing (Item)
 import ItemEntry
+import LoadText
+import PageTitle
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
 import User exposing (User)
 import Util
-import LoadText
 
 
 -- MODEL
@@ -124,14 +125,15 @@ updateRoute model route =
     case route of
         Router.ViewUser id ->
             if RemoteData.isDone model.user && id == getId model.user then
-                model ! []
+                ( model, PageTitle.set id )
             else
-                ( { model
+                { model
                     | user = Loading
                     , loadText = LoadText.toggle True model.loadText
-                  }
-                , fetchUser id
-                )
+                }
+                    ! [ fetchUser id
+                      , PageTitle.set id
+                      ]
 
         _ ->
             model ! []

@@ -7,6 +7,7 @@ import Html.Attributes as Attr
 import Item exposing (Item)
 import ItemEntry
 import LoadText
+import PageTitle
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
 
@@ -108,13 +109,14 @@ updateRoute model route =
                         , True
                         )
             in
-                ( { model
+                { model
                     | items = items
                     , category = category
                     , loadText = LoadText.toggle loading model.loadText
-                  }
-                , cmd
-                )
+                }
+                    ! [ cmd
+                      , PageTitle.set <| Api.label category
+                      ]
 
         _ ->
             model ! []

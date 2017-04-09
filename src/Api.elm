@@ -95,3 +95,25 @@ send =
 stringId : Category -> String
 stringId =
     categoryEndpoint
+
+
+label : Category -> String
+label category =
+    case category of
+        Ask ->
+            "Ask"
+
+        Best ->
+            "Best"
+
+        Job ->
+            "Job"
+
+        New ->
+            "New"
+
+        Show ->
+            "Show"
+
+        Top ->
+            "Top"
