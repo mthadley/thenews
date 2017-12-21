@@ -3,7 +3,7 @@ module ItemEntry exposing (DetailType(..), view)
 import DateFormat
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
-import Item exposing (Item, Type(..))
+import Types.Item exposing (Item, Type(..))
 import Router
 import Util exposing (maybeToString)
 

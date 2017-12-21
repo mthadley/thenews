@@ -4,12 +4,12 @@ import Api exposing (Category)
 import Dict exposing (Dict)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
-import Item exposing (Item)
 import ItemEntry
 import LoadText
 import PageTitle
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
+import Types.Item exposing (Item)
 
 
 -- MODEL

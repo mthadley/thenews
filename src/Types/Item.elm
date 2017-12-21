@@ -1,4 +1,4 @@
-module Item exposing (..)
+module Types.Item exposing (..)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline as Pipeline exposing (required, optional)

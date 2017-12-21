@@ -2,13 +2,13 @@ module Pages.User exposing (Model, Msg(RouteChange), init, subscriptions, update
 
 import Api
 import Html.Styled exposing (..)
-import Item exposing (Item)
 import ItemEntry
 import LoadText
 import PageTitle
 import RemoteData exposing (RemoteData(..))
 import Router exposing (Route)
-import User exposing (User)
+import Types.Item exposing (Item)
+import Types.User as User exposing (User)
 import Util
 
 

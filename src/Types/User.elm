@@ -1,4 +1,4 @@
-module User exposing (..)
+module Types.User exposing (..)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline as Pipeline exposing (required, optional)
