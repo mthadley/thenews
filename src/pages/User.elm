@@ -5,7 +5,7 @@ import Html.Styled exposing (..)
 import ItemEntry
 import LoadText
 import PageTitle
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (Route)
 import Types.Item exposing (Item)
 import Types.User as User exposing (User)
@@ -16,8 +16,8 @@ import Util
 
 
 type alias Model =
-    { user : RemoteData User
-    , items : RemoteData (List Item)
+    { user : WebData User
+    , items : WebData (List Item)
     , loadText : LoadText.Model
     }
 
@@ -25,7 +25,7 @@ type alias Model =
 init : Route -> ( Model, Cmd Msg )
 init route =
     updateRoute
-        (Model NotRequested NotRequested (LoadText.init False))
+        (Model NotAsked NotAsked (LoadText.init False))
         route
 
 
@@ -36,7 +36,7 @@ init route =
 view : Model -> Html Msg
 view model =
     case model.user of
-        Done user ->
+        Success user ->
             section []
                 [ viewUser user
                 , viewSubmissions model
@@ -65,7 +65,7 @@ viewSubmissions { items, loadText } =
 
         content =
             case items of
-                Done items ->
+                Success items ->
                     List.map (ItemEntry.view True details) items
 
                 Loading ->
@@ -124,7 +124,7 @@ updateRoute : Model -> Route -> ( Model, Cmd Msg )
 updateRoute model route =
     case route of
         Router.ViewUser id ->
-            if RemoteData.isDone model.user && id == getId model.user then
+            if RemoteData.isSuccess model.user && id == getId model.user then
                 ( model, PageTitle.set id )
             else
                 { model
@@ -149,7 +149,7 @@ fetchItems =
     Api.send ReceiveItems << Api.requestItems
 
 
-getId : RemoteData User -> String
+getId : WebData User -> String
 getId =
     RemoteData.withDefault "" << RemoteData.map .id
 

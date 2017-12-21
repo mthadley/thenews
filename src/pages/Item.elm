@@ -9,7 +9,7 @@ import Html.Styled.Events exposing (onClick)
 import ItemEntry
 import LoadText
 import PageTitle
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (Route)
 import Types.Item as Item exposing (Item)
 import Util
@@ -38,7 +38,7 @@ type alias Comments =
 
 type alias Model =
     { comments : Comments
-    , item : RemoteData Item
+    , item : WebData Item
     , showCount : Int
     , loadText : LoadText.Model
     , loading : Bool
@@ -49,7 +49,7 @@ init : Route -> ( Model, Cmd Msg )
 init route =
     updateRoute route
         { comments = Dict.empty
-        , item = NotRequested
+        , item = NotAsked
         , loading = False
         , loadText = LoadText.init False
         , showCount = 0
@@ -63,7 +63,7 @@ init route =
 view : Model -> Html Msg
 view model =
     case model.item of
-        Done item ->
+        Success item ->
             div []
                 [ ItemEntry.view True [ ItemEntry.By, ItemEntry.Score ] item
                 , viewCommentsContainer model item
@@ -322,7 +322,7 @@ updateRoute : Route -> Model -> ( Model, Cmd Msg )
 updateRoute route model =
     case route of
         Router.ViewItem id ->
-            if RemoteData.isDone model.item && id == getId model.item then
+            if RemoteData.isSuccess model.item && id == getId model.item then
                 ( model, setTitle model.item )
             else
                 { model
@@ -340,7 +340,7 @@ updateRoute route model =
             model ! []
 
 
-getId : RemoteData Item -> Int
+getId : WebData Item -> Int
 getId =
     RemoteData.withDefault -1 << RemoteData.map .id
 
@@ -383,7 +383,7 @@ getTitle { id, title } =
     Maybe.withDefault (toString id) title
 
 
-setTitle : RemoteData Item -> Cmd msg
+setTitle : WebData Item -> Cmd msg
 setTitle item =
     item
         |> RemoteData.map (PageTitle.set << getTitle)

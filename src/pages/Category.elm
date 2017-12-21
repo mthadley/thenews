@@ -7,7 +7,7 @@ import Html.Styled.Attributes as Attr
 import ItemEntry
 import LoadText
 import PageTitle
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (Route)
 import Types.Item exposing (Item)
 
@@ -23,11 +23,11 @@ type alias Model =
 
 
 type alias ItemsCache =
-    Dict String RemoteItems
+    Dict String WebItems
 
 
-type alias RemoteItems =
-    RemoteData (List Item)
+type alias WebItems =
+    WebData (List Item)
 
 
 init : Route -> ( Model, Cmd Msg )
@@ -42,7 +42,7 @@ init route =
 view : Model -> Html msg
 view model =
     case getData model.category model.items of
-        Done items ->
+        Success items ->
             section [] <| List.indexedMap viewCategoryItem items
 
         Loading ->
@@ -101,7 +101,7 @@ updateRoute model route =
         Router.View category ->
             let
                 ( items, cmd, loading ) =
-                    if RemoteData.isDone <| getData category model.items then
+                    if RemoteData.isSuccess <| getData category model.items then
                         ( model.items, Cmd.none, False )
                     else
                         ( insertItems category Loading model.items
@@ -127,14 +127,14 @@ fetchItems category =
     Api.send (ReceiveItems category) << Api.requestCategory <| category
 
 
-insertItems : Category -> RemoteItems -> ItemsCache -> ItemsCache
+insertItems : Category -> WebItems -> ItemsCache -> ItemsCache
 insertItems category =
     Dict.insert (Api.stringId category)
 
 
-getData : Category -> ItemsCache -> RemoteItems
+getData : Category -> ItemsCache -> WebItems
 getData category =
-    Maybe.withDefault NotRequested << Dict.get (Api.stringId category)
+    Maybe.withDefault NotAsked << Dict.get (Api.stringId category)
 
 
 subscriptions : Model -> Sub Msg
