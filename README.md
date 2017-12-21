@@ -11,10 +11,9 @@ news API described [here](https://github.com/HackerNews/API).
 
 ## Running Locally
 
-Just run these commands after cloning:
+Make sure you've installed `elm` and `elm-test`. Then run these commands after cloning:
 
 ```console
-$ npm install
-$ elm-package install
-$ npm run dev
+$ make
+$ make test
 ```

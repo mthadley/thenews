@@ -14,3 +14,7 @@ env:
 install:
   - npm install -g elm@$ELM_VERSION
   - npm install -g elm-test@$ELM_TEST_VERSION
+
+script:
+  - make
+  - make test
