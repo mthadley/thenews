@@ -1,8 +1,6 @@
-module Tests exposing (..)
+module DateFormatTests exposing (..)
 
-import App
 import Expect
-import String
 import Test exposing (..)
 import DateFormat
 

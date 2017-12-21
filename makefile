@@ -18,7 +18,7 @@ $(OUT)/index.html: src/index.html
 	@cp src/index.html $(OUT)
 
 test:
-	@elm-test
+	@TZ='Europe/London' elm-test
 
 watch:
 	@find src | entr make
