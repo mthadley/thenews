@@ -2,8 +2,8 @@ module Pages.Category exposing (..)
 
 import Api exposing (Category)
 import Dict exposing (Dict)
-import Html exposing (..)
-import Html.Attributes as Attr
+import Html.Styled exposing (..)
+import Html.Styled.Attributes as Attr
 import Item exposing (Item)
 import ItemEntry
 import LoadText

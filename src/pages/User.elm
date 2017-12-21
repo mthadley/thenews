@@ -1,7 +1,7 @@
 module Pages.User exposing (Model, Msg(RouteChange), init, subscriptions, update, view)
 
 import Api
-import Html exposing (..)
+import Html.Styled exposing (..)
 import Item exposing (Item)
 import ItemEntry
 import LoadText

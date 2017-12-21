@@ -1,7 +1,7 @@
 module Header exposing (view)
 
-import Html exposing (..)
-import Html.Attributes as Attr
+import Html.Styled exposing (..)
+import Html.Styled.Attributes as Attr
 import Router
 import Api
 

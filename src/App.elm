@@ -4,8 +4,9 @@ import Animation
 import Animation.Messenger
 import Animation.Spring.Presets as Presets
 import Header
-import Html exposing (..)
-import Html.Attributes as Attr
+import Html as UnstyledHtml
+import Html.Styled as Html exposing (..)
+import Html.Styled.Attributes as Attr
 import Nav
 import Pages.Category as CategoryPage
 import Pages.Item as ItemPage
@@ -87,7 +88,10 @@ viewMain model =
                 Router.ViewUser _ ->
                     Html.map UserPageMsg <| UserPage.view model.userPage
     in
-        main_ (Animation.render model.style) [ content ]
+        fromUnstyled <|
+            UnstyledHtml.main_ (Animation.render model.style)
+                [ toUnstyled content
+                ]
 
 
 

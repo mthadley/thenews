@@ -1,6 +1,6 @@
 module LoadText exposing (Model, Msg, init, subscriptions, toggle, update, view)
 
-import Html exposing (..)
+import Html.Styled exposing (..)
 import Time
 
 

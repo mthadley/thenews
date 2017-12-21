@@ -1,8 +1,8 @@
 module Router exposing (..)
 
 import Api exposing (Category(..))
-import Html
-import Html.Attributes as Attr
+import Html.Styled as Html
+import Html.Styled.Attributes as Attr
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 

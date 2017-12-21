@@ -3,9 +3,9 @@ module Pages.Item exposing (Model, Msg(RouteChange), init, update, view, subscri
 import Api
 import DateFormat
 import Dict exposing (Dict)
-import Html exposing (..)
-import Html.Attributes as Attr
-import Html.Events exposing (onClick)
+import Html.Styled exposing (..)
+import Html.Styled.Attributes as Attr
+import Html.Styled.Events exposing (onClick)
 import Item exposing (Item)
 import ItemEntry
 import LoadText
