@@ -1,8 +1,9 @@
 module Nav exposing (view)
 
+import Api exposing (Category)
+import Elements
 import Html.Styled exposing (..)
 import Router exposing (Route)
-import Api exposing (Category)
 
 
 isActive : Route -> Category -> Bool
@@ -30,8 +31,8 @@ navLinks =
 
 view : Route -> Html msg
 view route =
-    nav []
-        [ ul [] <| List.map (viewNavItem route) navLinks
+    Elements.nav []
+        [ Elements.navList [] <| List.map (viewNavItem route) navLinks
         ]
 
 
@@ -45,6 +46,6 @@ viewNavItem route ( name, category ) =
                 " "
     in
         li []
-            [ a [ Router.linkTo <| Router.View category ]
+            [ Elements.navLink [ Router.linkTo <| Router.View category ]
                 [ text <| indicator ++ name ]
             ]

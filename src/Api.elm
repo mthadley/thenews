@@ -2,7 +2,6 @@ module Api exposing (..)
 
 import Http exposing (Request)
 import Json.Decode as Decode
-import Result
 import Task exposing (Task)
 import Types.Item as Item exposing (Item)
 import Types.User as User exposing (User)

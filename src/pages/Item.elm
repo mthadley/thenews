@@ -3,8 +3,8 @@ module Pages.Item exposing (Model, Msg(RouteChange), init, update, view, subscri
 import Api
 import DateFormat
 import Dict exposing (Dict)
+import Elements
 import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attr
 import Html.Styled.Events exposing (onClick)
 import ItemEntry
 import LoadText
@@ -113,7 +113,7 @@ viewComments comments ids =
             Dict.get id comments
                 |> Util.viewMaybe (viewComment comments)
     in
-        div [ Attr.class "comment-level" ] <| List.map viewHelper ids
+        Elements.commentLevel [] <| List.map viewHelper ids
 
 
 viewComment : Comments -> Comment -> Html Msg
@@ -125,8 +125,8 @@ viewComment comments { collapsed, showCount, item, loadText, loading } =
         delta =
             List.length kids - showCount
     in
-        article [ Attr.class "comment" ]
-            [ h3 [ Attr.class "author" ]
+        Elements.comment []
+            [ Elements.author []
                 [ a [ Router.linkTo <| Router.ViewUser item.by ]
                     [ text item.by ]
                 , small []
@@ -170,7 +170,7 @@ viewShowMore id count loading loadText =
 
 viewShowLink : Msg -> List (Html Msg) -> Html Msg
 viewShowLink msg =
-    a [ Attr.class "show-more", Util.jsLink, onClick msg ]
+    Elements.showMore [ Util.jsLink, onClick msg ]
 
 
 getCommentsTitle : Item.Type -> String

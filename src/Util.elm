@@ -1,5 +1,6 @@
 module Util exposing (..)
 
+import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Json.Decode as Decode exposing (Decoder)
@@ -37,9 +38,8 @@ pluralize singular plural count =
 
 viewHtmlContent : String -> Html msg
 viewHtmlContent content =
-    div
-        [ Attr.class "html-content"
-        , Attr.property "innerHTML" <| Encode.string content
+    Elements.htmlContent
+        [ Attr.property "innerHTML" <| Encode.string content
         ]
         []
 

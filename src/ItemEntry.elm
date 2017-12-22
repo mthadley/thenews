@@ -1,10 +1,11 @@
 module ItemEntry exposing (DetailType(..), view)
 
 import DateFormat
+import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
-import Types.Item exposing (Item, Type(..))
 import Router
+import Types.Item exposing (Item, Type(..))
 import Util exposing (maybeToString)
 
 
@@ -21,8 +22,9 @@ type alias Detail =
 
 view : Bool -> List DetailType -> Item -> Html msg
 view showText detailTypes item =
-    article [ Attr.class "item" ]
-        [ h2 [] [ spanOrLink item.url <| getTitle item ]
+    Elements.item []
+        [ Elements.itemHeader []
+            [ spanOrLink item.url <| getTitle item ]
         , Util.viewIf showText <|
             Util.viewMaybe Util.viewHtmlContent item.text
         , footer [] <| viewDetails item detailTypes

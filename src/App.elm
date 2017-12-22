@@ -3,10 +3,10 @@ module App exposing (Model, Msg(RouteChange), init, update, view, subscriptions)
 import Animation
 import Animation.Messenger
 import Animation.Spring.Presets as Presets
+import Elements
 import Header
 import Html as UnstyledHtml
 import Html.Styled as Html exposing (..)
-import Html.Styled.Attributes as Attr
 import Nav
 import Pages.Category as CategoryPage
 import Pages.Item as ItemPage
@@ -14,6 +14,7 @@ import Pages.NotFound as NotFoundPage
 import Pages.User as UserPage
 import PageTitle
 import Router exposing (Route)
+import Styles exposing (styles)
 
 
 -- MODEL
@@ -64,8 +65,9 @@ init route =
 
 view : Model -> Html Msg
 view model =
-    div [ Attr.class "container" ]
-        [ Header.view
+    Elements.container []
+        [ styles
+        , Header.view
         , Nav.view model.nextRoute
         , viewMain model
         ]

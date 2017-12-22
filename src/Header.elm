@@ -4,6 +4,7 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Router
 import Api
+import Elements
 
 
 splash : String
@@ -18,11 +19,11 @@ splash =
 
 view : Html msg
 view =
-    header []
-        [ h1 [ Attr.class "header-ascii" ]
+    Elements.header []
+        [ Elements.headerAscii []
             [ a [ Router.linkTo <| Router.View Api.Top ] [ text splash ]
             ]
-        , p [ Attr.class "header-tagline" ]
+        , Elements.headerTagline []
             [ text "Thanks, "
             , a [ Attr.href "https://news.ycombinator.com" ] [ text "YC!" ]
             ]

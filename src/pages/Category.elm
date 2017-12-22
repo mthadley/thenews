@@ -2,8 +2,8 @@ module Pages.Category exposing (..)
 
 import Api exposing (Category)
 import Dict exposing (Dict)
+import Elements
 import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attr
 import ItemEntry
 import LoadText
 import PageTitle
@@ -54,8 +54,8 @@ view model =
 
 viewCategoryItem : Int -> Item -> Html msg
 viewCategoryItem rank item =
-    div [ Attr.class "category-item" ]
-        [ div [ Attr.class "item-rank" ] [ text <| "#" ++ (toString <| 1 + rank) ]
+    Elements.categoryItem []
+        [ Elements.itemRank [] [ text <| "#" ++ (toString <| 1 + rank) ]
         , ItemEntry.view False [ ItemEntry.By, ItemEntry.Score, ItemEntry.Comments ] item
         ]
 
