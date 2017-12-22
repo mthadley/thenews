@@ -86,8 +86,8 @@ viewSubmissions { items, loadText } =
 
 type Msg
     = RouteChange Route
-    | ReceiveUser (Api.Result User)
-    | ReceiveItems (Api.Result (List Item))
+    | ReceiveUser (WebData User)
+    | ReceiveItems (WebData (List Item))
     | LoadTextMsg LoadText.Msg
 
 
@@ -99,19 +99,19 @@ update msg model =
 
         ReceiveUser user ->
             ( { model
-                | user = RemoteData.fromResult user
+                | user = user
                 , items = Loading
               }
             , user
-                |> Result.map .submitted
-                |> Result.withDefault []
+                |> RemoteData.map .submitted
+                |> RemoteData.withDefault []
                 |> List.take 10
                 |> fetchItems
             )
 
         ReceiveItems items ->
             { model
-                | items = RemoteData.fromResult items
+                | items = items
                 , loadText = LoadText.toggle False model.loadText
             }
                 ! []

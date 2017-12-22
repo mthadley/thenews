@@ -65,7 +65,7 @@ viewCategoryItem rank item =
 
 
 type Msg
-    = ReceiveItems Category (Api.Result (List Item))
+    = ReceiveItems Category (WebData (List Item))
     | RouteChange Route
     | LoadTextMsg LoadText.Msg
 
@@ -76,7 +76,7 @@ update msg model =
         ReceiveItems category items ->
             let
                 newItems =
-                    insertItems category (RemoteData.fromResult items) model.items
+                    insertItems category items model.items
             in
                 { model
                     | items = newItems

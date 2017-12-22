@@ -194,8 +194,8 @@ getReplyText =
 
 type Msg
     = FetchComments Int
-    | ReceiveItem (Api.Result Item)
-    | ReceiveComments Int (Api.Result (List Item))
+    | ReceiveItem (WebData Item)
+    | ReceiveComments Int (WebData (List Item))
     | RouteChange Route
     | ItemLoadTextMsg LoadText.Msg
     | CommentLoadTextMsg Int LoadText.Msg
@@ -211,11 +211,8 @@ update msg model =
             else
                 fetchNestedComment id model
 
-        ReceiveItem result ->
+        ReceiveItem item ->
             let
-                item =
-                    RemoteData.fromResult result
-
                 cmd =
                     item
                         |> RemoteData.map (fetchComments model.showCount)
@@ -230,7 +227,7 @@ update msg model =
                       , setTitle item
                       ]
 
-        ReceiveComments id result ->
+        ReceiveComments id items ->
             let
                 delta =
                     if id == getId model.item then
@@ -240,7 +237,7 @@ update msg model =
             in
                 { model
                     | comments =
-                        Result.withDefault [] result
+                        RemoteData.withDefault [] items
                             |> foldItems model.comments
                             |> updateCount id
                             |> updateLoading False id

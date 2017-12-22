@@ -6,10 +6,7 @@ import Result
 import Task exposing (Task)
 import Types.Item as Item exposing (Item)
 import Types.User as User exposing (User)
-
-
-type alias Result a =
-    Result.Result Http.Error a
+import RemoteData exposing (WebData)
 
 
 type alias Task a =
@@ -87,9 +84,9 @@ requestUser id =
         Http.get (requestUrl <| "user/" ++ id) User.decode
 
 
-send : (Result a -> msg) -> Task a -> Cmd msg
-send =
-    Task.attempt
+send : (WebData a -> msg) -> Task a -> Cmd msg
+send msg =
+    Task.attempt (msg << RemoteData.fromResult)
 
 
 stringId : Category -> String
