@@ -6,10 +6,10 @@ ELM_FILES = $(shell find src -iname "*.elm")
 all: $(ELM_MAIN) $(JS_MAIN) $(OUT)/index.html
 
 clean:
-	@rm -fr $(OUT)
+	@rm -fr $(OUT) elm-stuff tests/elm-stuff
 
 $(ELM_MAIN): $(ELM_FILES)
-	elm-make src/Main.elm --warn --output $(ELM_MAIN)
+	elm-make --yes src/Main.elm --warn --output $(ELM_MAIN)
 
 $(JS_MAIN): src/index.js
 	@cp src/index.js $(OUT)
