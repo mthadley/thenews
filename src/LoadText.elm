@@ -1,4 +1,4 @@
-module LoadText exposing (Model, Msg, init, subscriptions, toggle, update, view)
+module LoadText exposing (Model, Msg, init, subscriptions, update, view)
 
 import Html.Styled exposing (..)
 import Time
@@ -9,11 +9,10 @@ import Time
 
 type alias Model =
     { count : Int
-    , animating : Bool
     }
 
 
-init : Bool -> Model
+init : Model
 init =
     Model 0
 
@@ -42,14 +41,9 @@ update msg model =
             { model | count = rem (model.count + 1) 4 }
 
 
-toggle : Bool -> Model -> Model
-toggle on model =
-    { model | animating = on }
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    if model.animating then
+subscriptions : Bool -> Sub Msg
+subscriptions loading =
+    if loading then
         Time.every (250 * Time.millisecond) <| always Tick
     else
         Sub.none

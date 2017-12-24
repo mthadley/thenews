@@ -55,12 +55,6 @@ requestCategoryIds category =
         |> Http.toTask
 
 
-requestCategory : Category -> Task (List Item)
-requestCategory category =
-    requestCategoryIds category
-        |> Task.andThen (requestItems << List.take 10)
-
-
 requestItems : List Int -> Task (List Item)
 requestItems =
     Task.sequence << List.map requestItem

@@ -1,6 +1,5 @@
-module Pages.Item exposing (Model, Msg(RouteChange), init, update, view, subscriptions)
+module Pages.Item exposing (Model, Msg, init, update, view, subscriptions)
 
-import Api
 import DateFormat
 import Dict exposing (Dict)
 import Elements
@@ -11,6 +10,7 @@ import LoadText
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (Route)
+import Store exposing (Action, Store)
 import Types.Item as Item exposing (Item)
 import Util
 
@@ -18,17 +18,10 @@ import Util
 -- MODEL
 
 
-pageSize : Int
-pageSize =
-    10
-
-
 type alias Comment =
     { collapsed : Bool
     , showCount : Int
-    , loading : Bool
     , loadText : LoadText.Model
-    , item : Item
     }
 
 
@@ -38,54 +31,84 @@ type alias Comments =
 
 type alias Model =
     { comments : Comments
-    , item : WebData Item
-    , showCount : Int
-    , loadText : LoadText.Model
-    , loading : Bool
+    , id : Int
     }
 
 
-init : Route -> ( Model, Cmd Msg )
-init route =
-    updateRoute route
-        { comments = Dict.empty
-        , item = NotAsked
-        , loading = False
-        , loadText = LoadText.init False
-        , showCount = 0
-        }
+init : Store -> Int -> ( Model, Action Msg )
+init store id =
+    ( Model (initComments store id) id
+    , Store.tag (RecieveItem id True) <| Store.requestItem id
+    )
+
+
+initComment : Comment
+initComment =
+    { collapsed = False
+    , showCount = 0
+    , loadText = LoadText.init
+    }
+
+
+initComments : Store -> Int -> Comments
+initComments store id =
+    let
+        helper id comments =
+            let
+                kids =
+                    Store.getItem store id
+                        |> RemoteData.map (Maybe.withDefault [] << .kids)
+                        |> RemoteData.withDefault []
+                        |> List.filter (RemoteData.isSuccess << Store.getItem store)
+
+                newComments =
+                    Dict.insert
+                        id
+                        { initComment | showCount = List.length kids }
+                        comments
+            in
+                List.foldl helper newComments kids
+    in
+        helper id Dict.empty
 
 
 
 -- VIEW
 
 
-view : Model -> Html Msg
-view model =
-    case model.item of
-        Success item ->
+view : Store -> Model -> Html Msg
+view store model =
+    case
+        ( Store.getItem store model.id
+        , Dict.get model.id model.comments
+        )
+    of
+        ( Success item, Just comment ) ->
             div []
                 [ ItemEntry.view True [ ItemEntry.By, ItemEntry.Score ] item
-                , viewCommentsContainer model item
+                , viewCommentsContainer store model.comments item comment
                 ]
 
-        Loading ->
-            LoadText.view model.loadText
+        ( Loading, Just comment ) ->
+            LoadText.view comment.loadText
 
-        _ ->
+        ( _, _ ) ->
             text "There doesn't seem to be anything here."
 
 
-viewCommentsContainer : Model -> Item -> Html Msg
-viewCommentsContainer { comments, loadText, loading, showCount } item =
-    case item.kids of
-        Just kids ->
+viewCommentsContainer : Store -> Comments -> Item -> Comment -> Html Msg
+viewCommentsContainer store comments item { loadText, showCount } =
+    Util.viewMaybe
+        (\kids ->
             let
                 count =
                     List.length kids
 
-                delta =
-                    List.length kids - showCount
+                visibleKids =
+                    List.take showCount kids
+
+                loading =
+                    RemoteData.isLoading <| Store.getItems store visibleKids
             in
                 section []
                     [ h3 []
@@ -98,32 +121,36 @@ viewCommentsContainer { comments, loadText, loading, showCount } item =
                                 ++ (toString <| Maybe.withDefault 0 item.descendants)
                                 ++ " Total)"
                         ]
-                    , viewComments comments <| List.take showCount kids
-                    , viewShowMore item.id delta loading loadText
+                    , viewComments store comments visibleKids
+                    , viewShowMore item.id (count - showCount) loading loadText
                     ]
+        )
+        item.kids
 
-        Nothing ->
-            Util.empty
 
-
-viewComments : Comments -> List Int -> Html Msg
-viewComments comments ids =
+viewComments : Store -> Comments -> List Int -> Html Msg
+viewComments store comments ids =
     let
-        viewHelper id =
-            Dict.get id comments
-                |> Util.viewMaybe (viewComment comments)
+        helper ( comment, item ) =
+            Maybe.map (viewComment store comments item) comment
     in
-        Elements.commentLevel [] <| List.map viewHelper ids
+        Util.takeMaybe (RemoteData.toMaybe << Store.getItem store) ids
+            |> Util.zip (getComments comments ids)
+            |> List.filterMap helper
+            |> Elements.commentLevel []
 
 
-viewComment : Comments -> Comment -> Html Msg
-viewComment comments { collapsed, showCount, item, loadText, loading } =
+viewComment : Store -> Comments -> Item -> Comment -> Html Msg
+viewComment store comments item { collapsed, showCount, loadText } =
     let
         kids =
             Maybe.withDefault [] item.kids
 
-        delta =
-            List.length kids - showCount
+        visibleKids =
+            List.take showCount kids
+
+        loading =
+            RemoteData.isLoading <| Store.getItems store visibleKids
     in
         Elements.comment []
             [ Elements.author []
@@ -135,12 +162,11 @@ viewComment comments { collapsed, showCount, item, loadText, loading } =
                     ]
                 ]
             , Util.viewMaybe Util.viewHtmlContent item.text
-            , Util.viewIf (showCount > 0) <|
-                viewHider collapsed item.id
+            , Util.viewIf (showCount > 0 && not loading) <| viewHider collapsed item.id
             , Util.viewIf (not collapsed) <|
                 div []
-                    [ viewComments comments <| List.take showCount kids
-                    , viewShowMore item.id delta loading loadText
+                    [ viewComments store comments visibleKids
+                    , viewShowMore item.id (List.length kids - showCount) loading loadText
                     ]
             ]
 
@@ -162,8 +188,7 @@ viewShowMore id count loading loadText =
         LoadText.view loadText
     else if count > 0 then
         viewShowLink (FetchComments id)
-            [ text <| "▬ " ++ (toString count) ++ getReplyText count
-            ]
+            [ text <| "▬ " ++ (toString count) ++ getReplyText count ]
     else
         Util.empty
 
@@ -194,152 +219,51 @@ getReplyText =
 
 type Msg
     = FetchComments Int
-    | ReceiveItem (WebData Item)
-    | ReceiveComments Int (WebData (List Item))
-    | RouteChange Route
-    | ItemLoadTextMsg LoadText.Msg
     | CommentLoadTextMsg Int LoadText.Msg
     | ToggleHide Int
+    | RecieveItem Int Bool
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Store -> Msg -> Model -> ( Model, Cmd Msg, Action Msg )
+update store msg model =
     case msg of
-        FetchComments id ->
-            if id == getId model.item then
-                fetchItemComment model
-            else
-                fetchNestedComment id model
-
-        ReceiveItem item ->
-            let
-                cmd =
-                    item
-                        |> RemoteData.map (fetchComments model.showCount)
-                        |> RemoteData.withDefault Cmd.none
-            in
-                { model
-                    | item = item
-                    , loading = True
-                    , loadText = LoadText.toggle True model.loadText
-                }
-                    ! [ cmd
-                      , setTitle item
-                      ]
-
-        ReceiveComments id items ->
-            let
-                delta =
-                    if id == getId model.item then
-                        pageSize
-                    else
-                        0
-            in
-                { model
-                    | comments =
-                        RemoteData.withDefault [] items
-                            |> foldItems model.comments
-                            |> updateCount id
-                            |> updateLoading False id
-                    , loading = False
-                    , loadText = LoadText.toggle False model.loadText
-                    , showCount = model.showCount + delta
-                }
-                    ! []
-
-        RouteChange route ->
-            updateRoute route model
-
-        ItemLoadTextMsg childMsg ->
-            { model | loadText = LoadText.update childMsg model.loadText } ! []
-
         CommentLoadTextMsg id childMsg ->
-            { model | comments = updateComentLoadText childMsg id model.comments } ! []
+            ( { model | comments = updateComentLoadText childMsg id model.comments }
+            , Cmd.none
+            , Store.none
+            )
+
+        FetchComments id ->
+            let
+                ( comments, action ) =
+                    requestComments (Store.getItem store id) model.comments
+            in
+                ( { model | comments = comments }, Cmd.none, action )
 
         ToggleHide id ->
-            { model | comments = updateCollapsed id model.comments } ! []
+            ( { model | comments = updateCollapsed id model.comments }, Cmd.none, Store.none )
 
+        RecieveItem id top ->
+            let
+                item =
+                    Store.getItem store id
 
-fetchItem : Int -> Cmd Msg
-fetchItem =
-    Api.send ReceiveItem << Api.requestItem
+                comments =
+                    Dict.update id (Just << Maybe.withDefault initComment) model.comments
 
-
-fetchComments : Int -> Item -> Cmd Msg
-fetchComments count item =
-    Maybe.withDefault [] item.kids
-        |> List.drop count
-        |> List.take pageSize
-        |> Api.requestItems
-        |> Api.send (ReceiveComments item.id)
-
-
-fetchNestedComment : Int -> Model -> ( Model, Cmd Msg )
-fetchNestedComment id model =
-    let
-        cmd =
-            Dict.get id model.comments
-                |> Maybe.map (\{ item, showCount } -> fetchComments showCount item)
-                |> Maybe.withDefault Cmd.none
-    in
-        ( { model | comments = updateLoading True id model.comments }, cmd )
-
-
-fetchItemComment : Model -> ( Model, Cmd Msg )
-fetchItemComment model =
-    let
-        cmd =
-            model.item
-                |> RemoteData.map (fetchComments model.showCount)
-                |> RemoteData.withDefault Cmd.none
-    in
-        ( { model
-            | loading = True
-            , loadText = LoadText.toggle True model.loadText
-          }
-        , cmd
-        )
-
-
-foldItems : Comments -> List Item -> Comments
-foldItems =
-    List.foldl
-        (\item ->
-            Dict.insert item.id <|
-                { collapsed = False
-                , showCount = 0
-                , loading = False
-                , loadText = LoadText.init False
-                , item = item
-                }
-        )
-
-
-updateRoute : Route -> Model -> ( Model, Cmd Msg )
-updateRoute route model =
-    case route of
-        Router.ViewItem id ->
-            if RemoteData.isSuccess model.item && id == getId model.item then
-                ( model, setTitle model.item )
-            else
-                { model
-                    | comments = Dict.empty
-                    , item = Loading
-                    , loading = True
-                    , showCount = 0
-                    , loadText = LoadText.toggle True model.loadText
-                }
-                    ! [ fetchItem id
-                      , PageTitle.set "Loading"
-                      ]
-
-        _ ->
-            model ! []
-
-
-getId : WebData Item -> Int
-getId =
-    RemoteData.withDefault -1 << RemoteData.map .id
+                ( newComments, action ) =
+                    if top then
+                        requestComments item comments
+                    else
+                        ( comments, Store.none )
+            in
+                ( { model | comments = newComments }
+                , if top then
+                    setTitle item
+                  else
+                    Cmd.none
+                , action
+                )
 
 
 updateComment : (Comment -> Comment) -> Int -> Comments -> Comments
@@ -350,17 +274,7 @@ updateComment f id =
 updateCount : Int -> Comments -> Comments
 updateCount =
     updateComment <|
-        \comment -> { comment | showCount = comment.showCount + pageSize }
-
-
-updateLoading : Bool -> Int -> Comments -> Comments
-updateLoading loading =
-    updateComment <|
-        \comment ->
-            { comment
-                | loading = loading
-                , loadText = LoadText.toggle loading comment.loadText
-            }
+        \comment -> { comment | showCount = comment.showCount + Store.pageSize }
 
 
 updateCollapsed : Int -> Comments -> Comments
@@ -375,6 +289,36 @@ updateComentLoadText msg =
         \comment -> { comment | loadText = LoadText.update msg comment.loadText }
 
 
+requestComments : WebData Item -> Comments -> ( Comments, Action Msg )
+requestComments item comments =
+    let
+        id =
+            RemoteData.withDefault 0 <| RemoteData.map .id item
+
+        count =
+            Dict.get id comments
+                |> Maybe.map .showCount
+                |> Maybe.withDefault 0
+    in
+        item
+            |> RemoteData.map
+                (.kids
+                    >> Maybe.withDefault []
+                    >> List.drop count
+                    >> List.take Store.pageSize
+                )
+            |> RemoteData.withDefault []
+            |> List.map
+                (\id -> Store.tag (RecieveItem id False) <| Store.requestItem id)
+            |> Store.batch
+            |> (,) (updateCount id comments)
+
+
+getComments : Comments -> List Int -> List (Maybe Comment)
+getComments comments =
+    List.foldr ((::) << (flip Dict.get) comments) []
+
+
 getTitle : Item -> String
 getTitle { id, title } =
     Maybe.withDefault (toString id) title
@@ -387,12 +331,31 @@ setTitle item =
         |> RemoteData.withDefault Cmd.none
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : Store -> Model -> Sub Msg
+subscriptions store model =
     let
-        mapSub ( id, { loadText } ) =
-            Sub.map (CommentLoadTextMsg id) <| LoadText.subscriptions loadText
+        rootSub =
+            Store.getItem store model.id
+                |> RemoteData.isLoading
+                |> mapSub model.id
     in
-        Sub.batch <|
-            [ Sub.map ItemLoadTextMsg <| LoadText.subscriptions model.loadText ]
-                ++ (List.map mapSub <| Dict.toList model.comments)
+        Dict.toList model.comments
+            |> List.map (commentSub store model)
+            |> (::) rootSub
+            |> Sub.batch
+
+
+commentSub : Store -> Model -> ( Int, Comment ) -> Sub Msg
+commentSub store model ( id, comment ) =
+    Store.getItem store id
+        |> RemoteData.map
+            (List.take comment.showCount << Maybe.withDefault [] << .kids)
+        |> RemoteData.withDefault []
+        |> Store.getItems store
+        |> RemoteData.isLoading
+        |> mapSub id
+
+
+mapSub : Int -> Bool -> Sub Msg
+mapSub id =
+    Sub.map (CommentLoadTextMsg id) << LoadText.subscriptions

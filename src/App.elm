@@ -14,6 +14,7 @@ import Pages.NotFound as NotFoundPage
 import Pages.User as UserPage
 import PageTitle
 import Router exposing (Route)
+import Store exposing (Store, Action)
 import Styles exposing (styles)
 
 
@@ -23,40 +24,82 @@ import Styles exposing (styles)
 type alias Model =
     { currentRoute : Route
     , nextRoute : Route
-    , itemPage : ItemPage.Model
-    , categoryPage : CategoryPage.Model
-    , userPage : UserPage.Model
+    , page : Page
+    , store : Store
     , style : Animation.Messenger.State Msg
     }
+
+
+type Page
+    = CategoryPage CategoryPage.Model
+    | UserPage UserPage.Model
+    | ItemPage ItemPage.Model
+    | NotFoundPage
 
 
 init : Route -> ( Model, Cmd Msg )
 init route =
     let
-        ( itemPage, itemPageCmd ) =
-            ItemPage.init route
-
-        ( categoryPage, categoryPageCmd ) =
-            CategoryPage.init route
-
-        ( userPage, userPageCmd ) =
-            UserPage.init route
+        ( page, cmd, store ) =
+            initPage route Store.init
 
         style =
             Animation.style <| animationProps In
     in
         { currentRoute = route
         , nextRoute = route
-        , itemPage = itemPage
-        , categoryPage = categoryPage
-        , userPage = userPage
+        , page = page
         , style = style
+        , store = store
         }
-            ! [ Cmd.map ItemPageMsg itemPageCmd
-              , Cmd.map CategoryPageMsg categoryPageCmd
-              , Cmd.map UserPageMsg userPageCmd
+            ! [ cmd
               , maybeSetNotFoundTitle route
               ]
+
+
+initPage : Route -> Store -> ( Page, Cmd Msg, Store )
+initPage route store =
+    let
+        ( page, pageCmd, action ) =
+            case route of
+                Router.View category ->
+                    let
+                        ( model, pageCmd, action ) =
+                            CategoryPage.init category
+                    in
+                        ( CategoryPage model
+                        , pageCmd
+                        , Store.map CategoryPageMsg action
+                        )
+
+                Router.ViewItem id ->
+                    let
+                        ( model, action ) =
+                            ItemPage.init store id
+                    in
+                        ( ItemPage model, Cmd.none, Store.map ItemPageMsg action )
+
+                Router.ViewUser user ->
+                    let
+                        ( model, pageCmd, action ) =
+                            UserPage.init user
+                    in
+                        ( UserPage model, pageCmd, Store.map UserPageMsg action )
+
+                _ ->
+                    ( NotFoundPage, Cmd.none, Store.none )
+
+        ( newStore, storeCmd, outCmd ) =
+            Store.update action store
+    in
+        ( page
+        , Cmd.batch
+            [ pageCmd
+            , Cmd.map StoreMsg storeCmd
+            , outCmd
+            ]
+        , newStore
+        )
 
 
 
@@ -74,24 +117,24 @@ view model =
 
 
 viewMain : Model -> Html Msg
-viewMain model =
+viewMain { page, store, style } =
     let
         content =
-            case model.currentRoute of
-                Router.NotFound ->
+            case page of
+                CategoryPage model ->
+                    CategoryPage.view store model
+
+                ItemPage model ->
+                    Html.map ItemPageMsg <| ItemPage.view store model
+
+                UserPage model ->
+                    UserPage.view store model
+
+                NotFoundPage ->
                     NotFoundPage.view
-
-                Router.View _ ->
-                    Html.map CategoryPageMsg <| CategoryPage.view model.categoryPage
-
-                Router.ViewItem _ ->
-                    Html.map ItemPageMsg <| ItemPage.view model.itemPage
-
-                Router.ViewUser _ ->
-                    Html.map UserPageMsg <| UserPage.view model.userPage
     in
         fromUnstyled <|
-            UnstyledHtml.main_ (Animation.render model.style)
+            UnstyledHtml.main_ (Animation.render style)
                 [ toUnstyled content
                 ]
 
@@ -104,6 +147,7 @@ type Msg
     = ActivateRoute Route
     | AnimationMsg Animation.Msg
     | RouteChange Route
+    | StoreMsg (Action Msg)
     | CategoryPageMsg CategoryPage.Msg
     | ItemPageMsg ItemPage.Msg
     | UserPageMsg UserPage.Msg
@@ -111,8 +155,8 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        RouteChange route ->
+    case ( msg, model.page ) of
+        ( RouteChange route, _ ) ->
             if route == model.currentRoute then
                 model ! []
             else
@@ -127,56 +171,71 @@ update msg model =
                 }
                     ! [ maybeSetNotFoundTitle route ]
 
-        ActivateRoute route ->
+        ( ActivateRoute route, _ ) ->
             let
-                ( itemPage, itemPageCmd ) =
-                    ItemPage.update (ItemPage.RouteChange route) model.itemPage
-
-                ( categoryPage, categoryPageCmd ) =
-                    CategoryPage.update (CategoryPage.RouteChange route) model.categoryPage
-
-                ( userPage, userPageCmd ) =
-                    UserPage.update (UserPage.RouteChange route) model.userPage
+                ( page, cmd, store ) =
+                    initPage route model.store
             in
-                { model
+                ( { model
                     | currentRoute = route
-                    , categoryPage = categoryPage
-                    , itemPage = itemPage
-                    , userPage = userPage
+                    , page = page
+                    , store = store
                     , style = Animation.interrupt [ animate In ] model.style
-                }
-                    ! [ Cmd.map CategoryPageMsg categoryPageCmd
-                      , Cmd.map ItemPageMsg itemPageCmd
-                      , Cmd.map UserPageMsg userPageCmd
-                      ]
+                  }
+                , cmd
+                )
 
-        AnimationMsg animationMsg ->
+        ( AnimationMsg animationMsg, _ ) ->
             let
                 ( style, cmd ) =
                     Animation.Messenger.update animationMsg model.style
             in
                 ( { model | style = style }, cmd )
 
-        ItemPageMsg childMsg ->
+        ( StoreMsg action, _ ) ->
             let
-                ( newModel, cmd ) =
-                    ItemPage.update childMsg model.itemPage
+                ( store, cmd, outCmd ) =
+                    Store.update action model.store
             in
-                ( { model | itemPage = newModel }, Cmd.map ItemPageMsg cmd )
+                ( { model | store = store }
+                , Cmd.batch [ Cmd.map StoreMsg cmd, outCmd ]
+                )
 
-        CategoryPageMsg childMsg ->
+        ( CategoryPageMsg msg, CategoryPage pageModel ) ->
             let
-                ( newModel, cmd ) =
-                    CategoryPage.update childMsg model.categoryPage
-            in
-                ( { model | categoryPage = newModel }, Cmd.map CategoryPageMsg cmd )
+                ( newPageModel, action ) =
+                    CategoryPage.update model.store msg pageModel
 
-        UserPageMsg childMsg ->
-            let
-                ( newModel, cmd ) =
-                    UserPage.update childMsg model.userPage
+                ( store, cmd ) =
+                    updateStoreWith CategoryPageMsg action model.store
             in
-                ( { model | userPage = newModel }, Cmd.map UserPageMsg cmd )
+                ( { model | page = CategoryPage newPageModel, store = store }, cmd )
+
+        ( UserPageMsg msg, UserPage pageModel ) ->
+            let
+                ( newPageModel, action ) =
+                    UserPage.update model.store msg pageModel
+
+                ( store, cmd ) =
+                    updateStoreWith UserPageMsg action model.store
+            in
+                ( { model | page = UserPage newPageModel, store = store }, cmd )
+
+        ( ItemPageMsg msg, ItemPage pageModel ) ->
+            let
+                ( newPageModel, pageCmd, action ) =
+                    ItemPage.update model.store msg pageModel
+
+                ( store, cmd ) =
+                    updateStoreWith ItemPageMsg action model.store
+            in
+                ( { model | page = ItemPage newPageModel, store = store }
+                , Cmd.batch [ Cmd.map ItemPageMsg pageCmd, cmd ]
+                )
+
+        -- Msgs arriving for the wrong model
+        ( _, _ ) ->
+            model ! []
 
 
 type Animate
@@ -213,18 +272,38 @@ maybeSetNotFoundTitle route =
             Cmd.none
 
 
+updateStoreWith : (a -> Msg) -> Action a -> Store -> ( Store, Cmd Msg )
+updateStoreWith f action store =
+    let
+        ( newStore, cmd, outCmd ) =
+            Store.update (Store.map f action) store
+    in
+        ( newStore, Cmd.batch [ Cmd.map StoreMsg cmd, outCmd ] )
+
+
 
 -- SUBS
+
+
+getPageSub : Model -> Sub Msg
+getPageSub { page, store } =
+    case page of
+        CategoryPage model ->
+            Sub.map CategoryPageMsg <| CategoryPage.subscriptions store model
+
+        ItemPage model ->
+            Sub.map ItemPageMsg <| ItemPage.subscriptions store model
+
+        UserPage model ->
+            Sub.map UserPageMsg <| UserPage.subscriptions store model
+
+        NotFoundPage ->
+            Sub.none
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Sub.map CategoryPageMsg <|
-            CategoryPage.subscriptions model.categoryPage
-        , Sub.map UserPageMsg <|
-            UserPage.subscriptions model.userPage
-        , Sub.map ItemPageMsg <|
-            ItemPage.subscriptions model.itemPage
-        , Animation.subscription AnimationMsg [ model.style ]
+        [ Animation.subscription AnimationMsg [ model.style ]
+        , getPageSub model
         ]

@@ -1,15 +1,14 @@
 module Pages.Category exposing (..)
 
 import Api exposing (Category)
-import Dict exposing (Dict)
 import Elements
 import Html.Styled exposing (..)
 import ItemEntry
 import LoadText
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
-import Router exposing (Route)
 import Types.Item exposing (Item)
+import Store exposing (Store, Action)
 
 
 -- MODEL
@@ -17,31 +16,27 @@ import Types.Item exposing (Item)
 
 type alias Model =
     { category : Category
-    , items : ItemsCache
     , loadText : LoadText.Model
     }
 
 
-type alias ItemsCache =
-    Dict String WebItems
-
-
-type alias WebItems =
-    WebData (List Item)
-
-
-init : Route -> ( Model, Cmd Msg )
-init route =
-    updateRoute (Model Api.Best Dict.empty (LoadText.init False)) route
+init : Category -> ( Model, Cmd msg, Action Msg )
+init category =
+    ( { category = category
+      , loadText = LoadText.init
+      }
+    , PageTitle.set <| Api.label category
+    , Store.tag RecieveCategory <| Store.requestCategory category
+    )
 
 
 
 -- VIEW
 
 
-view : Model -> Html msg
-view model =
-    case getData model.category model.items of
+view : Store -> Model -> Html msg
+view store model =
+    case getCategoryItems model.category store of
         Success items ->
             section [] <| List.indexedMap viewCategoryItem items
 
@@ -65,78 +60,37 @@ viewCategoryItem rank item =
 
 
 type Msg
-    = ReceiveItems Category (WebData (List Item))
-    | RouteChange Route
-    | LoadTextMsg LoadText.Msg
+    = LoadTextMsg LoadText.Msg
+    | RecieveCategory
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Store -> Msg -> Model -> ( Model, Action Msg )
+update store msg model =
     case msg of
-        ReceiveItems category items ->
-            let
-                newItems =
-                    insertItems category items model.items
-            in
-                { model
-                    | items = newItems
-                    , loadText = LoadText.toggle False model.loadText
-                }
-                    ! []
-
-        RouteChange route ->
-            updateRoute model route
-
         LoadTextMsg childMsg ->
             let
                 loadText =
                     LoadText.update childMsg model.loadText
             in
-                { model | loadText = loadText } ! []
+                ( { model | loadText = loadText }, Store.none )
+
+        RecieveCategory ->
+            Store.getCategory store model.category
+                |> RemoteData.withDefault []
+                |> List.map Store.requestItem
+                |> Store.batch
+                |> (,) model
 
 
-updateRoute : Model -> Route -> ( Model, Cmd Msg )
-updateRoute model route =
-    case route of
-        Router.View category ->
-            let
-                ( items, cmd, loading ) =
-                    if RemoteData.isSuccess <| getData category model.items then
-                        ( model.items, Cmd.none, False )
-                    else
-                        ( insertItems category Loading model.items
-                        , fetchItems category
-                        , True
-                        )
-            in
-                { model
-                    | items = items
-                    , category = category
-                    , loadText = LoadText.toggle loading model.loadText
-                }
-                    ! [ cmd
-                      , PageTitle.set <| Api.label category
-                      ]
-
-        _ ->
-            model ! []
+getCategoryItems : Category -> Store -> WebData (List Item)
+getCategoryItems category store =
+    Store.getCategory store category
+        |> RemoteData.andThen (Store.getItems store)
 
 
-fetchItems : Category -> Cmd Msg
-fetchItems category =
-    Api.send (ReceiveItems category) << Api.requestCategory <| category
-
-
-insertItems : Category -> WebItems -> ItemsCache -> ItemsCache
-insertItems category =
-    Dict.insert (Api.stringId category)
-
-
-getData : Category -> ItemsCache -> WebItems
-getData category =
-    Maybe.withDefault NotAsked << Dict.get (Api.stringId category)
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.map LoadTextMsg <| LoadText.subscriptions model.loadText
+subscriptions : Store -> Model -> Sub Msg
+subscriptions store model =
+    Store.getCategory store model.category
+        |> RemoteData.isLoading
+        |> LoadText.subscriptions
+        |> Sub.map LoadTextMsg

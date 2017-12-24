@@ -1,12 +1,11 @@
-module Pages.User exposing (Model, Msg(RouteChange), init, subscriptions, update, view)
+module Pages.User exposing (Model, Msg, init, subscriptions, update, view)
 
-import Api
 import Html.Styled exposing (..)
 import ItemEntry
 import LoadText
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
-import Router exposing (Route)
+import Store exposing (Action, Store)
 import Types.Item exposing (Item)
 import Types.User as User exposing (User)
 import Util
@@ -16,30 +15,30 @@ import Util
 
 
 type alias Model =
-    { user : WebData User
-    , items : WebData (List Item)
+    { user : String
     , loadText : LoadText.Model
     }
 
 
-init : Route -> ( Model, Cmd Msg )
-init route =
-    updateRoute
-        (Model NotAsked NotAsked (LoadText.init False))
-        route
+init : String -> ( Model, Cmd msg, Action Msg )
+init user =
+    ( Model user LoadText.init
+    , PageTitle.set user
+    , Store.tag RecieveUser <| Store.requestUser user
+    )
 
 
 
 -- VIEW
 
 
-view : Model -> Html Msg
-view model =
-    case model.user of
+view : Store -> Model -> Html msg
+view store model =
+    case Store.getUser store model.user of
         Success user ->
             section []
                 [ viewUser user
-                , viewSubmissions model
+                , viewSubmissions model <| getUserItems store user.id
                 ]
 
         Loading ->
@@ -49,7 +48,7 @@ view model =
             text "There doesn't seem to be anything here."
 
 
-viewUser : User -> Html Msg
+viewUser : User -> Html msg
 viewUser user =
     div []
         [ h3 [] [ text user.id ]
@@ -57,8 +56,8 @@ viewUser user =
         ]
 
 
-viewSubmissions : Model -> Html Msg
-viewSubmissions { items, loadText } =
+viewSubmissions : Model -> WebData (List Item) -> Html msg
+viewSubmissions { loadText } items =
     let
         details =
             [ ItemEntry.Score, ItemEntry.Comments, ItemEntry.Created ]
@@ -85,75 +84,41 @@ viewSubmissions { items, loadText } =
 
 
 type Msg
-    = RouteChange Route
-    | ReceiveUser (WebData User)
-    | ReceiveItems (WebData (List Item))
-    | LoadTextMsg LoadText.Msg
+    = LoadTextMsg LoadText.Msg
+    | RecieveUser
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Store -> Msg -> Model -> ( Model, Action Msg )
+update store msg model =
     case msg of
-        RouteChange route ->
-            updateRoute model route
+        LoadTextMsg childMsg ->
+            ( { model | loadText = LoadText.update childMsg model.loadText }, Store.none )
 
-        ReceiveUser user ->
-            ( { model
-                | user = user
-                , items = Loading
-              }
-            , user
+        RecieveUser ->
+            Store.getUser store model.user
                 |> RemoteData.map .submitted
                 |> RemoteData.withDefault []
-                |> List.take 10
-                |> fetchItems
-            )
-
-        ReceiveItems items ->
-            { model
-                | items = items
-                , loadText = LoadText.toggle False model.loadText
-            }
-                ! []
-
-        LoadTextMsg childMsg ->
-            { model | loadText = LoadText.update childMsg model.loadText } ! []
+                |> List.take Store.pageSize
+                |> List.map Store.requestItem
+                |> Store.batch
+                |> (,) model
 
 
-updateRoute : Model -> Route -> ( Model, Cmd Msg )
-updateRoute model route =
-    case route of
-        Router.ViewUser id ->
-            if RemoteData.isSuccess model.user && id == getId model.user then
-                ( model, PageTitle.set id )
-            else
-                { model
-                    | user = Loading
-                    , loadText = LoadText.toggle True model.loadText
-                }
-                    ! [ fetchUser id
-                      , PageTitle.set id
-                      ]
-
-        _ ->
-            model ! []
+getUserItems : Store -> String -> WebData (List Item)
+getUserItems store =
+    Store.getUser store
+        >> RemoteData.map (List.take Store.pageSize << .submitted)
+        >> RemoteData.andThen (Store.getItems store)
 
 
-fetchUser : String -> Cmd Msg
-fetchUser =
-    Api.send ReceiveUser << Api.requestUser
+
+-- SUBS
 
 
-fetchItems : List Int -> Cmd Msg
-fetchItems =
-    Api.send ReceiveItems << Api.requestItems
-
-
-getId : WebData User -> String
-getId =
-    RemoteData.withDefault "" << RemoteData.map .id
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.map LoadTextMsg <| LoadText.subscriptions model.loadText
+subscriptions : Store -> Model -> Sub Msg
+subscriptions store model =
+    Store.getUser store model.user
+        |> RemoteData.andThen (getUserItems store << .id)
+        |> RemoteData.isLoading
+        |> LoadText.subscriptions
+        |> Sub.map LoadTextMsg

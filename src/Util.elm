@@ -23,6 +23,16 @@ maybeToString =
     Maybe.map toString
 
 
+mapThird : (c -> d) -> ( a, b, c ) -> ( a, b, d )
+mapThird f ( a, b, c ) =
+    ( a, b, f c )
+
+
+mapSecond : (b -> d) -> ( a, b, c ) -> ( a, d, c )
+mapSecond f ( a, b, c ) =
+    ( a, f b, c )
+
+
 optionalMaybe : String -> Decoder a -> (Decoder (Maybe a -> b) -> Decoder b)
 optionalMaybe field decoder =
     optional field (Decode.map Just decoder) Nothing
@@ -36,11 +46,20 @@ pluralize singular plural count =
         singular
 
 
+takeMaybe : (a -> Maybe b) -> List a -> List b
+takeMaybe f list =
+    List.head list
+        |> Maybe.andThen f
+        |> Maybe.map2
+            (\list x -> x :: takeMaybe f list)
+            (List.tail list)
+        |> Maybe.withDefault []
+
+
 viewHtmlContent : String -> Html msg
 viewHtmlContent content =
     Elements.htmlContent
-        [ Attr.property "innerHTML" <| Encode.string content
-        ]
+        [ Attr.property "innerHTML" <| Encode.string content ]
         []
 
 
@@ -55,3 +74,13 @@ viewIf condition content =
 viewMaybe : (a -> Html msg) -> Maybe a -> Html msg
 viewMaybe f =
     Maybe.withDefault empty << Maybe.map f
+
+
+zip : List a -> List b -> List ( a, b )
+zip xs ys =
+    case ( xs, ys ) of
+        ( x :: xs, y :: ys ) ->
+            ( x, y ) :: zip xs ys
+
+        ( _, _ ) ->
+            []
