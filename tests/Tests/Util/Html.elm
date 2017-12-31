@@ -1,8 +1,8 @@
-module UtilTests exposing (..)
+module Tests.Util.Html exposing (..)
 
 import Expect
 import Test exposing (..)
-import Util
+import Util.Html as Util
 
 
 all : Test
