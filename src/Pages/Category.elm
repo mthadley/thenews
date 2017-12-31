@@ -51,7 +51,7 @@ viewCategoryItem : Int -> Item -> Html msg
 viewCategoryItem rank item =
     Elements.categoryItem []
         [ Elements.itemRank [] [ text <| "#" ++ (toString <| 1 + rank) ]
-        , ItemView.view False [ ItemView.by, ItemView.score, ItemView.comments ] item
+        , ItemView.view [ ItemView.by, ItemView.score, ItemView.comments ] item
         ]
 
 

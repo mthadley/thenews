@@ -59,13 +59,18 @@ viewUser user =
 viewSubmissions : Model -> WebData (List Item) -> Html msg
 viewSubmissions { loadText } items =
     let
-        details =
-            [ ItemView.score, ItemView.comments, ItemView.created ]
-
         content =
             case items of
                 Success items ->
-                    List.map (ItemView.view True details) items
+                    List.map
+                        (ItemView.view
+                            [ ItemView.textContent
+                            , ItemView.score
+                            , ItemView.comments
+                            , ItemView.created
+                            ]
+                        )
+                        items
 
                 Loading ->
                     [ LoadText.view loadText ]

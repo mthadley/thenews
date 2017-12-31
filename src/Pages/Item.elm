@@ -94,7 +94,7 @@ view store model =
     of
         ( Success item, Just comment ) ->
             div []
-                [ ItemView.view True [ ItemView.by, ItemView.score ] item
+                [ ItemView.view [ ItemView.by, ItemView.score ] item
                 , viewCommentsContainer store model.comments item comment
                 ]
 

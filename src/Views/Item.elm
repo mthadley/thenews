@@ -1,4 +1,4 @@
-module Views.Item exposing (by, score, comments, created, view)
+module Views.Item exposing (by, comments, created, score, textContent, view)
 
 import Elements
 import Html.Styled exposing (..)
@@ -15,16 +15,12 @@ type DetailType
     | Score
     | Comments
     | Created
+    | TextContent
 
 
 by : DetailType
 by =
     By
-
-
-score : DetailType
-score =
-    Score
 
 
 comments : DetailType
@@ -37,18 +33,28 @@ created =
     Created
 
 
+score : DetailType
+score =
+    Score
+
+
+textContent : DetailType
+textContent =
+    TextContent
+
+
 type alias Detail =
     ( String, Maybe String, Maybe String )
 
 
-view : Bool -> List DetailType -> Item -> Html msg
-view showText detailTypes item =
+view : List DetailType -> Item -> Html msg
+view details item =
     Elements.item []
         [ Elements.itemHeader []
             [ spanOrLink item.url <| getTitle item ]
-        , viewIf showText <|
+        , viewIf (List.member TextContent details) <|
             viewMaybe viewHtmlContent item.text
-        , footer [] <| viewDetails item detailTypes
+        , footer [] <| viewDetails item details
         ]
 
 
@@ -78,6 +84,9 @@ getDetail item type_ =
             , Just <| DateFormat.format item.time
             , Nothing
             )
+
+        _ ->
+            ( "", Nothing, Nothing )
 
 
 viewDetails : Item -> List DetailType -> List (Html msg)
