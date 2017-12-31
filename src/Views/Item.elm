@@ -1,4 +1,4 @@
-module Views.Item exposing (DetailType(..), view)
+module Views.Item exposing (by, score, comments, created, view)
 
 import DateFormat
 import Elements
@@ -15,6 +15,26 @@ type DetailType
     | Score
     | Comments
     | Created
+
+
+by : DetailType
+by =
+    By
+
+
+score : DetailType
+score =
+    Score
+
+
+comments : DetailType
+comments =
+    Comments
+
+
+created : DetailType
+created =
+    Created
 
 
 type alias Detail =

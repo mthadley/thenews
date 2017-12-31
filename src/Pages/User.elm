@@ -60,7 +60,7 @@ viewSubmissions : Model -> WebData (List Item) -> Html msg
 viewSubmissions { loadText } items =
     let
         details =
-            [ ItemView.Score, ItemView.Comments, ItemView.Created ]
+            [ ItemView.score, ItemView.comments, ItemView.created ]
 
         content =
             case items of
