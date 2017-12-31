@@ -1,4 +1,4 @@
-module DateFormat exposing (format)
+module Util.DateFormat exposing (format)
 
 import Date exposing (Date)
 

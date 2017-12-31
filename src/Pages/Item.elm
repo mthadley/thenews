@@ -1,6 +1,5 @@
 module Pages.Item exposing (Model, Msg, init, update, view, subscriptions)
 
-import DateFormat
 import Dict exposing (Dict)
 import Elements
 import Html.Styled exposing (..)
@@ -10,6 +9,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (Route)
 import Store exposing (Action, Store)
 import Types.Item as Item exposing (Item)
+import Util.DateFormat as DateFormat
 import Util.List exposing (zip, takeMaybe)
 import Util.Html
     exposing

@@ -1,11 +1,11 @@
 module Views.Item exposing (by, score, comments, created, view)
 
-import DateFormat
 import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Router
 import Types.Item exposing (Item, Type(..))
+import Util.DateFormat as DateFormat
 import Util.Html exposing (viewIf, viewMaybe, viewHtmlContent)
 import Util.Json exposing (maybeToString)
 

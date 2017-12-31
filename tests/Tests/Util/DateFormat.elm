@@ -1,8 +1,8 @@
-module DateFormatTests exposing (..)
+module Tests.Util.DateFormat exposing (..)
 
 import Expect
 import Test exposing (..)
-import DateFormat
+import Util.DateFormat as DateFormat
 
 
 all : Test
