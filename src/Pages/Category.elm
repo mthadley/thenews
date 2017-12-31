@@ -3,12 +3,12 @@ module Pages.Category exposing (..)
 import Api exposing (Category)
 import Elements
 import Html.Styled exposing (..)
-import ItemEntry
-import LoadText
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
-import Types.Item exposing (Item)
 import Store exposing (Store, Action)
+import Types.Item exposing (Item)
+import Views.Item as ItemView
+import Views.LoadText as LoadText
 
 
 -- MODEL
@@ -51,7 +51,7 @@ viewCategoryItem : Int -> Item -> Html msg
 viewCategoryItem rank item =
     Elements.categoryItem []
         [ Elements.itemRank [] [ text <| "#" ++ (toString <| 1 + rank) ]
-        , ItemEntry.view False [ ItemEntry.By, ItemEntry.Score, ItemEntry.Comments ] item
+        , ItemView.view False [ ItemView.By, ItemView.Score, ItemView.Comments ] item
         ]
 
 

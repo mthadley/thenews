@@ -1,4 +1,4 @@
-module Header exposing (view)
+module Views.Header exposing (view)
 
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr

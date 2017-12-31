@@ -24,7 +24,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Task
 import Types.Item exposing (Item)
 import Types.User exposing (User)
-import Util
+import Util.Tuple exposing (mapSecond, mapThird)
 
 
 type alias Maps =
@@ -70,7 +70,7 @@ update action ((Store maps) as store) =
 
         Tagged msg action ->
             update action store
-                |> Util.mapSecond (Cmd.map <| TaggedResult msg)
+                |> mapSecond (Cmd.map <| TaggedResult msg)
 
         TaggedResult msg action ->
             let
@@ -89,8 +89,8 @@ update action ((Store maps) as store) =
             let
                 applyActions action ( store, cmd, outCmd ) =
                     update action store
-                        |> Util.mapSecond (\c -> Cmd.batch [ cmd, c ])
-                        |> Util.mapThird (\c -> Cmd.batch [ outCmd, c ])
+                        |> mapSecond (\c -> Cmd.batch [ cmd, c ])
+                        |> mapThird (\c -> Cmd.batch [ outCmd, c ])
             in
                 List.foldl applyActions (noop store) actions
 

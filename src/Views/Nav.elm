@@ -1,4 +1,4 @@
-module Nav exposing (view)
+module Views.Nav exposing (view)
 
 import Api exposing (Category)
 import Elements

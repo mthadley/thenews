@@ -5,14 +5,23 @@ import Dict exposing (Dict)
 import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Events exposing (onClick)
-import ItemEntry
-import LoadText
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (Route)
 import Store exposing (Action, Store)
 import Types.Item as Item exposing (Item)
-import Util
+import Util.List exposing (zip, takeMaybe)
+import Util.Html
+    exposing
+        ( empty
+        , jsLink
+        , pluralize
+        , viewIf
+        , viewMaybe
+        , viewHtmlContent
+        )
+import Views.Item as ItemView
+import Views.LoadText as LoadText
 
 
 -- MODEL
@@ -85,7 +94,7 @@ view store model =
     of
         ( Success item, Just comment ) ->
             div []
-                [ ItemEntry.view True [ ItemEntry.By, ItemEntry.Score ] item
+                [ ItemView.view True [ ItemView.By, ItemView.Score ] item
                 , viewCommentsContainer store model.comments item comment
                 ]
 
@@ -98,7 +107,7 @@ view store model =
 
 viewCommentsContainer : Store -> Comments -> Item -> Comment -> Html Msg
 viewCommentsContainer store comments item { loadText, showCount } =
-    Util.viewMaybe
+    viewMaybe
         (\kids ->
             let
                 count =
@@ -134,8 +143,8 @@ viewComments store comments ids =
         helper ( comment, item ) =
             Maybe.map (viewComment store comments item) comment
     in
-        Util.takeMaybe (RemoteData.toMaybe << Store.getItem store) ids
-            |> Util.zip (getComments comments ids)
+        takeMaybe (RemoteData.toMaybe << Store.getItem store) ids
+            |> zip (getComments comments ids)
             |> List.filterMap helper
             |> Elements.commentLevel []
 
@@ -161,9 +170,9 @@ viewComment store comments item { collapsed, showCount, loadText } =
                     , time [] [ text <| DateFormat.format item.time ]
                     ]
                 ]
-            , Util.viewMaybe Util.viewHtmlContent item.text
-            , Util.viewIf (showCount > 0 && not loading) <| viewHider collapsed item.id
-            , Util.viewIf (not collapsed) <|
+            , viewMaybe viewHtmlContent item.text
+            , viewIf (showCount > 0 && not loading) <| viewHider collapsed item.id
+            , viewIf (not collapsed) <|
                 div []
                     [ viewComments store comments visibleKids
                     , viewShowMore item.id (List.length kids - showCount) loading loadText
@@ -190,12 +199,12 @@ viewShowMore id count loading loadText =
         viewShowLink (FetchComments id)
             [ text <| "▬ " ++ (toString count) ++ getReplyText count ]
     else
-        Util.empty
+        empty
 
 
 viewShowLink : Msg -> List (Html Msg) -> Html Msg
 viewShowLink msg =
-    Elements.showMore [ Util.jsLink, onClick msg ]
+    Elements.showMore [ jsLink, onClick msg ]
 
 
 getCommentsTitle : Item.Type -> String
@@ -210,7 +219,7 @@ getCommentsTitle type_ =
 
 getReplyText : Int -> String
 getReplyText =
-    Util.pluralize " Reply" " Replies"
+    pluralize " Reply" " Replies"
 
 
 

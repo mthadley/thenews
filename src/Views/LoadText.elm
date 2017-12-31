@@ -1,4 +1,4 @@
-module LoadText exposing (Model, Msg, init, subscriptions, update, view)
+module Views.LoadText exposing (Model, Msg, init, subscriptions, update, view)
 
 import Html.Styled exposing (..)
 import Time

@@ -1,4 +1,4 @@
-module ItemEntry exposing (DetailType(..), view)
+module Views.Item exposing (DetailType(..), view)
 
 import DateFormat
 import Elements
@@ -6,7 +6,8 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Router
 import Types.Item exposing (Item, Type(..))
-import Util exposing (maybeToString)
+import Util.Html exposing (viewIf, viewMaybe, viewHtmlContent)
+import Util.Json exposing (maybeToString)
 
 
 type DetailType
@@ -25,8 +26,8 @@ view showText detailTypes item =
     Elements.item []
         [ Elements.itemHeader []
             [ spanOrLink item.url <| getTitle item ]
-        , Util.viewIf showText <|
-            Util.viewMaybe Util.viewHtmlContent item.text
+        , viewIf showText <|
+            viewMaybe viewHtmlContent item.text
         , footer [] <| viewDetails item detailTypes
         ]
 

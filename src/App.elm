@@ -4,10 +4,8 @@ import Animation
 import Animation.Messenger
 import Animation.Spring.Presets as Presets
 import Elements
-import Header
 import Html as UnstyledHtml
 import Html.Styled as Html exposing (..)
-import Nav
 import Pages.Category as CategoryPage
 import Pages.Item as ItemPage
 import Pages.NotFound as NotFoundPage
@@ -16,6 +14,8 @@ import PageTitle
 import Router exposing (Route)
 import Store exposing (Store, Action)
 import Styles exposing (styles)
+import Views.Header as Header
+import Views.Nav as Nav
 
 
 -- MODEL

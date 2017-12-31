@@ -1,14 +1,14 @@
 module Pages.User exposing (Model, Msg, init, subscriptions, update, view)
 
 import Html.Styled exposing (..)
-import ItemEntry
-import LoadText
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
 import Types.Item exposing (Item)
 import Types.User as User exposing (User)
-import Util
+import Util.Html exposing (viewMaybe, viewHtmlContent)
+import Views.Item as ItemView
+import Views.LoadText as LoadText
 
 
 -- MODEL
@@ -52,7 +52,7 @@ viewUser : User -> Html msg
 viewUser user =
     div []
         [ h3 [] [ text user.id ]
-        , Util.viewMaybe Util.viewHtmlContent user.about
+        , viewMaybe viewHtmlContent user.about
         ]
 
 
@@ -60,12 +60,12 @@ viewSubmissions : Model -> WebData (List Item) -> Html msg
 viewSubmissions { loadText } items =
     let
         details =
-            [ ItemEntry.Score, ItemEntry.Comments, ItemEntry.Created ]
+            [ ItemView.Score, ItemView.Comments, ItemView.Created ]
 
         content =
             case items of
                 Success items ->
-                    List.map (ItemEntry.view True details) items
+                    List.map (ItemView.view True details) items
 
                 Loading ->
                     [ LoadText.view loadText ]

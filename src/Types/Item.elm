@@ -2,7 +2,7 @@ module Types.Item exposing (..)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline as Pipeline exposing (required, optional)
-import Util exposing (optionalMaybe)
+import Util.Json exposing (optionalMaybe)
 
 
 type Type
