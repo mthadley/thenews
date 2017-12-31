@@ -24,4 +24,4 @@ watch:
 	@find src | entr make
 
 pages: all
-	@echo "Publishing to Github pages..."
+	@gh-pages -d dist
