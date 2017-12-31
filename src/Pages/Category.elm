@@ -90,7 +90,7 @@ getCategoryItems category store =
 
 subscriptions : Store -> Model -> Sub Msg
 subscriptions store model =
-    Store.getCategory store model.category
+    getCategoryItems model.category store
         |> RemoteData.isLoading
         |> LoadText.subscriptions
         |> Sub.map LoadTextMsg
