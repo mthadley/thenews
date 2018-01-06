@@ -21,16 +21,18 @@ module Store
 import Api exposing (Category)
 import Dict exposing (Dict)
 import RemoteData exposing (RemoteData(..), WebData)
+import Tagged exposing (Tagged)
+import Tagged.Dict exposing (TaggedDict)
 import Task
-import Types.Item exposing (Item)
-import Types.User exposing (User)
+import Types.Item as Item exposing (Item)
+import Types.User as User exposing (User)
 import Util.Tuple exposing (mapSecond, mapThird)
 
 
 type alias Maps =
-    { categories : Dict String (WebData (List Int))
-    , items : Dict Int (WebData Item)
-    , users : Dict String (WebData User)
+    { categories : Dict String (WebData (List Item.Id))
+    , items : TaggedDict Item.Ident Int (WebData Item)
+    , users : TaggedDict User.Ident String (WebData User)
     }
 
 
@@ -44,8 +46,8 @@ init : Store
 init =
     Store
         { categories = Dict.empty
-        , users = Dict.empty
-        , items = Dict.empty
+        , users = Tagged.Dict.empty
+        , items = Tagged.Dict.empty
         }
 
 
@@ -54,12 +56,12 @@ type Action msg
     | Batch (List (Action msg))
     | Tagged msg (Action msg)
     | TaggedResult msg (Action msg)
-    | RecieveItem Int (WebData Item)
-    | RecieveUser String (WebData User)
-    | RequestItem Int
-    | RequestUser String
+    | RecieveItem Item.Id (WebData Item)
+    | RecieveUser User.Id (WebData User)
+    | RequestItem Item.Id
+    | RequestUser User.Id
     | RequestCategory Category
-    | RecieveCategory Category (WebData (List Int))
+    | RecieveCategory Category (WebData (List Item.Id))
 
 
 update : Action msg -> Store -> ( Store, Cmd (Action msg), Cmd msg )
@@ -97,26 +99,26 @@ update action ((Store maps) as store) =
         RequestUser id ->
             ( Store
                 { maps
-                    | users = Dict.update id setLoading maps.users
+                    | users = Tagged.Dict.update id setLoading maps.users
                 }
-            , Api.send (RecieveUser id) <| Api.requestUser id
+            , Api.send (RecieveUser id) <| Api.requestUser <| Tagged.untag id
             , Cmd.none
             )
 
         RecieveUser id user ->
-            noop <| Store { maps | users = Dict.insert id user maps.users }
+            noop <| Store { maps | users = Tagged.Dict.insert id user maps.users }
 
         RequestItem id ->
             ( Store
                 { maps
-                    | items = Dict.update id setLoading maps.items
+                    | items = Tagged.Dict.update id setLoading maps.items
                 }
             , fetchItem id
             , Cmd.none
             )
 
         RecieveItem id data ->
-            noop <| Store { maps | items = Dict.insert id data maps.items }
+            noop <| Store { maps | items = Tagged.Dict.insert id data maps.items }
 
         RequestCategory category ->
             ( Store
@@ -194,32 +196,34 @@ requestCategory =
     RequestCategory
 
 
-requestUser : String -> Action msg
+requestUser : User.Id -> Action msg
 requestUser =
     RequestUser
 
 
-requestItem : Int -> Action msg
+requestItem : Item.Id -> Action msg
 requestItem =
     RequestItem
 
 
-getCategory : Store -> Category -> WebData (List Int)
-getCategory store category =
-    get .categories store <| Api.label category
+getCategory : Store -> Category -> WebData (List Item.Id)
+getCategory (Store store) category =
+    store.categories
+        |> Dict.get (Api.label category)
+        |> Maybe.withDefault NotAsked
 
 
-getUser : Store -> String -> WebData User
+getUser : Store -> User.Id -> WebData User
 getUser =
     get .users
 
 
-getItem : Store -> Int -> WebData Item
+getItem : Store -> Item.Id -> WebData Item
 getItem =
     get .items
 
 
-getItems : Store -> List Int -> WebData (List Item)
+getItems : Store -> List Item.Id -> WebData (List Item)
 getItems store ids =
     fromList <| List.map (getItem store) ids
 
@@ -243,9 +247,9 @@ setLoading item =
             Just Loading
 
 
-fetchItem : Int -> Cmd (Action msg)
+fetchItem : Item.Id -> Cmd (Action msg)
 fetchItem id =
-    Api.send (RecieveItem id) <| Api.requestItem id
+    Api.send (RecieveItem id) <| Api.requestItem <| Tagged.untag id
 
 
 fromList : List (WebData a) -> WebData (List a)
@@ -259,9 +263,9 @@ noop a =
 
 
 get :
-    (Maps -> Dict comparable (WebData a))
+    (Maps -> TaggedDict k comparable (WebData a))
     -> Store
-    -> comparable
+    -> Tagged k comparable
     -> WebData a
 get f (Store store) id =
-    Maybe.withDefault NotAsked <| Dict.get id <| f store
+    Maybe.withDefault NotAsked <| Tagged.Dict.get id <| f store

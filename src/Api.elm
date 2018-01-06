@@ -6,6 +6,7 @@ import RemoteData exposing (WebData)
 import Task exposing (Task)
 import Types.Item as Item exposing (Item)
 import Types.User as User exposing (User)
+import Util.Json exposing (tag)
 
 
 type alias Task a =
@@ -48,9 +49,9 @@ categoryEndpoint category =
             "topstories"
 
 
-requestCategoryIds : Category -> Task (List Int)
+requestCategoryIds : Category -> Task (List Item.Id)
 requestCategoryIds category =
-    Decode.list Decode.int
+    Decode.list (tag Decode.int)
         |> Http.get (requestUrl <| categoryEndpoint category)
         |> Http.toTask
 

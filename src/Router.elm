@@ -4,13 +4,16 @@ import Api exposing (Category(..))
 import Html.Styled as Html
 import Html.Styled.Attributes as Attr
 import Navigation exposing (Location)
+import Tagged
+import Types.Item as Item
+import Types.User as User
 import UrlParser exposing (..)
 
 
 type Route
     = View Category
-    | ViewItem Int
-    | ViewUser String
+    | ViewItem Item.Id
+    | ViewUser User.Id
     | NotFound
 
 
@@ -24,8 +27,8 @@ parseRoute =
         , map (View New) <| s "new"
         , map (View Show) <| s "show"
         , map (View Top) <| s "top"
-        , map ViewItem <| s "item" </> int
-        , map ViewUser <| s "user" </> string
+        , map (ViewItem << Tagged.tag) <| s "item" </> int
+        , map (ViewUser << Tagged.tag) <| s "user" </> string
         ]
 
 
@@ -61,10 +64,10 @@ reverse route =
                     "404"
 
                 ViewItem id ->
-                    "item/" ++ toString id
+                    "item/" ++ (toString <| Tagged.untag id)
 
                 ViewUser id ->
-                    "user/" ++ id
+                    "user/" ++ Tagged.untag id
     in
     "#" ++ path
 

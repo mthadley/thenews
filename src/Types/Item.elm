@@ -1,8 +1,29 @@
-module Types.Item exposing (..)
+module Types.Item
+    exposing
+        ( Id
+        , Ident
+        , Item
+        , PollOpt
+        , Type(..)
+        , decode
+        , decodeType
+        , pollOpt
+        )
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline as Pipeline exposing (optional, required)
-import Util.Json exposing (optionalMaybe)
+import Tagged exposing (Tagged)
+import Types.Item.Id
+import Types.User as User
+import Util.Json exposing (optionalMaybe, tag)
+
+
+type alias Ident =
+    Types.Item.Id.Ident
+
+
+type alias Id =
+    Types.Item.Id.Id
 
 
 type Type
@@ -14,13 +35,13 @@ type Type
 
 
 type alias Item =
-    { by : String
+    { by : User.Id
     , dead : Bool
     , deleted : Bool
     , descendants : Maybe Int
-    , id : Int
-    , kids : Maybe (List Int)
-    , parent : Maybe Int
+    , id : Id
+    , kids : Maybe (List Id)
+    , parent : Maybe Id
     , parts : Maybe (List PollOpt)
     , score : Maybe Int
     , text : Maybe String
@@ -32,9 +53,9 @@ type alias Item =
 
 
 type alias PollOpt =
-    { by : String
+    { by : User.Id
     , id : Int
-    , parent : Int
+    , parent : Id
     , score : Int
     , text : String
     , time : Int
@@ -44,13 +65,13 @@ type alias PollOpt =
 decode : Decoder Item
 decode =
     Pipeline.decode Item
-        |> optional "by" string "Deleted"
+        |> optional "by" (tag string) (Tagged.tag "Deleted")
         |> optional "dead" bool False
         |> optional "deleted" bool False
         |> optionalMaybe "descendants" int
-        |> required "id" int
-        |> optionalMaybe "kids" (list int)
-        |> optionalMaybe "parent" int
+        |> required "id" (tag int)
+        |> optionalMaybe "kids" (list <| tag int)
+        |> optionalMaybe "parent" (tag int)
         |> optionalMaybe "parts" (list pollOpt)
         |> optionalMaybe "score" int
         |> optionalMaybe "text" string
@@ -85,9 +106,9 @@ decodeType str =
 pollOpt : Decoder PollOpt
 pollOpt =
     Pipeline.decode PollOpt
-        |> required "by" string
+        |> required "by" (tag string)
         |> required "int" int
-        |> required "parent" int
+        |> required "parent" (tag int)
         |> required "score" int
         |> required "text" string
         |> required "time" int

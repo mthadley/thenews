@@ -4,6 +4,7 @@ import Html.Styled exposing (..)
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
+import Tagged
 import Types.Item exposing (Item)
 import Types.User as User exposing (User)
 import Util.Html exposing (viewHtmlContent, viewMaybe)
@@ -15,15 +16,15 @@ import Views.LoadText as LoadText
 
 
 type alias Model =
-    { user : String
+    { user : User.Id
     , loadText : LoadText.Model
     }
 
 
-init : String -> ( Model, Cmd msg, Action Msg )
+init : User.Id -> ( Model, Cmd msg, Action Msg )
 init user =
     ( Model user LoadText.init
-    , PageTitle.set user
+    , PageTitle.set <| Tagged.untag user
     , Store.tag RecieveUser <| Store.requestUser user
     )
 
@@ -51,7 +52,7 @@ view store model =
 viewUser : User -> Html msg
 viewUser user =
     div []
-        [ h3 [] [ text user.id ]
+        [ h3 [] [ text <| Tagged.untag user.id ]
         , viewMaybe viewHtmlContent user.about
         ]
 
@@ -109,7 +110,7 @@ update store msg model =
                 |> (,) model
 
 
-getUserItems : Store -> String -> WebData (List Item)
+getUserItems : Store -> User.Id -> WebData (List Item)
 getUserItems store =
     Store.getUser store
         >> RemoteData.map (List.take Store.pageSize << .submitted)

@@ -1,6 +1,5 @@
 module Pages.Item exposing (Model, Msg, init, subscriptions, update, view)
 
-import Dict exposing (Dict)
 import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Events exposing (onClick)
@@ -8,6 +7,8 @@ import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (Route)
 import Store exposing (Action, Store)
+import Tagged
+import Tagged.Dict as Dict exposing (TaggedDict)
 import Types.Item as Item exposing (Item)
 import Util.DateFormat as DateFormat
 import Util.Html
@@ -35,16 +36,16 @@ type alias Comment =
 
 
 type alias Comments =
-    Dict Int Comment
+    TaggedDict Item.Ident Int Comment
 
 
 type alias Model =
     { comments : Comments
-    , id : Int
+    , id : Item.Id
     }
 
 
-init : Store -> Int -> ( Model, Action Msg )
+init : Store -> Item.Id -> ( Model, Action Msg )
 init store id =
     ( Model (initComments store id) id
     , Store.tag (RecieveItem id True) <| Store.requestItem id
@@ -59,7 +60,7 @@ initComment =
     }
 
 
-initComments : Store -> Int -> Comments
+initComments : Store -> Item.Id -> Comments
 initComments store id =
     let
         helper id comments =
@@ -137,7 +138,7 @@ viewCommentsContainer store comments item { loadText, showCount } =
         item.kids
 
 
-viewComments : Store -> Comments -> List Int -> Html Msg
+viewComments : Store -> Comments -> List Item.Id -> Html Msg
 viewComments store comments ids =
     let
         helper ( comment, item ) =
@@ -164,7 +165,7 @@ viewComment store comments item { collapsed, showCount, loadText } =
     Elements.comment []
         [ Elements.author []
             [ a [ Router.linkTo <| Router.ViewUser item.by ]
-                [ text item.by ]
+                [ text <| Tagged.untag item.by ]
             , small []
                 [ text " on "
                 , time [] [ text <| DateFormat.format item.time ]
@@ -180,7 +181,7 @@ viewComment store comments item { collapsed, showCount, loadText } =
         ]
 
 
-viewHider : Bool -> Int -> Html Msg
+viewHider : Bool -> Item.Id -> Html Msg
 viewHider collapsed id =
     viewShowLink (ToggleHide id)
         [ text <|
@@ -191,7 +192,7 @@ viewHider collapsed id =
         ]
 
 
-viewShowMore : Int -> Int -> Bool -> LoadText.Model -> Html Msg
+viewShowMore : Item.Id -> Int -> Bool -> LoadText.Model -> Html Msg
 viewShowMore id count loading loadText =
     if loading then
         LoadText.view loadText
@@ -227,10 +228,10 @@ getReplyText =
 
 
 type Msg
-    = FetchComments Int
-    | CommentLoadTextMsg Int LoadText.Msg
-    | ToggleHide Int
-    | RecieveItem Int Bool
+    = FetchComments Item.Id
+    | CommentLoadTextMsg Item.Id LoadText.Msg
+    | ToggleHide Item.Id
+    | RecieveItem Item.Id Bool
 
 
 update : Store -> Msg -> Model -> ( Model, Cmd Msg, Action Msg )
@@ -275,24 +276,24 @@ update store msg model =
             )
 
 
-updateComment : (Comment -> Comment) -> Int -> Comments -> Comments
+updateComment : (Comment -> Comment) -> Item.Id -> Comments -> Comments
 updateComment f id =
     Dict.update id <| Maybe.map f
 
 
-updateCount : Int -> Comments -> Comments
+updateCount : Item.Id -> Comments -> Comments
 updateCount =
     updateComment <|
         \comment -> { comment | showCount = comment.showCount + Store.pageSize }
 
 
-updateCollapsed : Int -> Comments -> Comments
+updateCollapsed : Item.Id -> Comments -> Comments
 updateCollapsed =
     updateComment <|
         \comment -> { comment | collapsed = not comment.collapsed }
 
 
-updateComentLoadText : LoadText.Msg -> Int -> Comments -> Comments
+updateComentLoadText : LoadText.Msg -> Item.Id -> Comments -> Comments
 updateComentLoadText msg =
     updateComment <|
         \comment -> { comment | loadText = LoadText.update msg comment.loadText }
@@ -302,7 +303,7 @@ requestComments : WebData Item -> Comments -> ( Comments, Action Msg )
 requestComments item comments =
     let
         id =
-            RemoteData.withDefault 0 <| RemoteData.map .id item
+            RemoteData.withDefault (Tagged.tag 0) <| RemoteData.map .id item
 
         count =
             Dict.get id comments
@@ -323,7 +324,7 @@ requestComments item comments =
         |> (,) (updateCount id comments)
 
 
-getComments : Comments -> List Int -> List (Maybe Comment)
+getComments : Comments -> List Item.Id -> List (Maybe Comment)
 getComments comments =
     List.foldr ((::) << flip Dict.get comments) []
 
@@ -354,7 +355,7 @@ subscriptions store model =
         |> Sub.batch
 
 
-commentSub : Store -> Model -> ( Int, Comment ) -> Sub Msg
+commentSub : Store -> Model -> ( Item.Id, Comment ) -> Sub Msg
 commentSub store model ( id, comment ) =
     Store.getItem store id
         |> RemoteData.map
@@ -365,6 +366,6 @@ commentSub store model ( id, comment ) =
         |> mapSub id
 
 
-mapSub : Int -> Bool -> Sub Msg
+mapSub : Item.Id -> Bool -> Sub Msg
 mapSub id =
     Sub.map (CommentLoadTextMsg id) << LoadText.subscriptions

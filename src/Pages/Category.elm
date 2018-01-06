@@ -6,7 +6,7 @@ import Html.Styled exposing (..)
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
-import Types.Item exposing (Item)
+import Types.Item as Item exposing (Item)
 import Views.Item as ItemView
 import Views.LoadText as LoadText
 

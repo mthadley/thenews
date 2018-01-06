@@ -4,6 +4,7 @@ import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Router
+import Tagged
 import Types.Item exposing (Item, Type(..))
 import Util.DateFormat as DateFormat
 import Util.Html exposing (viewHtmlContent, viewIf, viewMaybe)
@@ -63,7 +64,7 @@ getDetail item type_ =
     case type_ of
         By ->
             ( "By "
-            , Just item.by
+            , Just <| Tagged.untag item.by
             , Just <| Router.reverse <| Router.ViewUser item.by
             )
 
