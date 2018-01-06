@@ -6,7 +6,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
 import Types.Item exposing (Item)
 import Types.User as User exposing (User)
-import Util.Html exposing (viewMaybe, viewHtmlContent)
+import Util.Html exposing (viewHtmlContent, viewMaybe)
 import Views.Item as ItemView
 import Views.LoadText as LoadText
 
@@ -78,10 +78,10 @@ viewSubmissions { loadText } items =
                 _ ->
                     [ text "There doesn't seem to be anything here." ]
     in
-        section [] <|
-            [ h2 [] [ text "▬ Recent Submissions" ]
-            , div [] content
-            ]
+    section [] <|
+        [ h2 [] [ text "▬ Recent Submissions" ]
+        , div [] content
+        ]
 
 
 

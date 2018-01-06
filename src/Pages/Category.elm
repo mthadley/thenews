@@ -5,7 +5,7 @@ import Elements
 import Html.Styled exposing (..)
 import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
-import Store exposing (Store, Action)
+import Store exposing (Action, Store)
 import Types.Item exposing (Item)
 import Views.Item as ItemView
 import Views.LoadText as LoadText
@@ -72,7 +72,7 @@ update store msg model =
                 loadText =
                     LoadText.update childMsg model.loadText
             in
-                ( { model | loadText = loadText }, Store.none )
+            ( { model | loadText = loadText }, Store.none )
 
         RecieveCategory ->
             Store.getCategory store model.category

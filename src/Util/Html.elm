@@ -1,8 +1,8 @@
 module Util.Html
     exposing
         ( empty
-        , pluralize
         , jsLink
+        , pluralize
         , viewHtmlContent
         , viewIf
         , viewMaybe

@@ -6,7 +6,7 @@ import Html.Styled.Attributes as Attr
 import Router
 import Types.Item exposing (Item, Type(..))
 import Util.DateFormat as DateFormat
-import Util.Html exposing (viewIf, viewMaybe, viewHtmlContent)
+import Util.Html exposing (viewHtmlContent, viewIf, viewMaybe)
 import Util.Json exposing (maybeToString)
 
 
@@ -95,7 +95,7 @@ viewDetails item =
         detail ( name, value, href ) =
             Maybe.map (spanOrLink href << (++) name) value
     in
-        List.intersperse (text " • ") << List.filterMap (detail << getDetail item)
+    List.intersperse (text " • ") << List.filterMap (detail << getDetail item)
 
 
 getTitle : Item -> String

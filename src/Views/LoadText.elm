@@ -23,7 +23,7 @@ init =
 
 view : Model -> Html msg
 view model =
-    div [] [ text <| "Loading" ++ (String.repeat model.count ".") ]
+    div [] [ text <| "Loading" ++ String.repeat model.count "." ]
 
 
 

@@ -5,8 +5,8 @@ import Css.Media as Media exposing (only, screen, withMedia)
 import Html.Styled as Html exposing (..)
 import Theme
     exposing
-        ( commentLevelMargin
-        , colors
+        ( colors
+        , commentLevelMargin
         , fontSizes
         , termShadow
         )
@@ -41,7 +41,7 @@ commentLevel =
             , termShadow
             , property "content" "''"
             , height <| pct 100
-            , left <| (px -1) |*| commentLevelMargin
+            , left <| px -1 |*| commentLevelMargin
             , opacity <| num 0.8
             , position absolute
             , top zero

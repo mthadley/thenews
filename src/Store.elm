@@ -8,9 +8,9 @@ module Store
         , getItems
         , getUser
         , init
-        , pageSize
         , map
         , none
+        , pageSize
         , requestCategory
         , requestItem
         , requestUser
@@ -77,13 +77,13 @@ update action ((Store maps) as store) =
                 ( newStore, cmd, outCmd ) =
                     update action store
             in
-                ( newStore
-                , cmd
-                , Cmd.batch
-                    [ Task.perform identity <| Task.succeed msg
-                    , outCmd
-                    ]
-                )
+            ( newStore
+            , cmd
+            , Cmd.batch
+                [ Task.perform identity <| Task.succeed msg
+                , outCmd
+                ]
+            )
 
         Batch actions ->
             let
@@ -92,7 +92,7 @@ update action ((Store maps) as store) =
                         |> mapSecond (\c -> Cmd.batch [ cmd, c ])
                         |> mapThird (\c -> Cmd.batch [ outCmd, c ])
             in
-                List.foldl applyActions (noop store) actions
+            List.foldl applyActions (noop store) actions
 
         RequestUser id ->
             ( Store

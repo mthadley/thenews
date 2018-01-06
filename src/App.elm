@@ -1,4 +1,4 @@
-module App exposing (Model, Msg(RouteChange), init, update, view, subscriptions)
+module App exposing (Model, Msg(RouteChange), init, subscriptions, update, view)
 
 import Animation
 import Animation.Messenger
@@ -6,13 +6,13 @@ import Animation.Spring.Presets as Presets
 import Elements
 import Html as UnstyledHtml
 import Html.Styled as Html exposing (..)
+import PageTitle
 import Pages.Category as CategoryPage
 import Pages.Item as ItemPage
 import Pages.NotFound as NotFoundPage
 import Pages.User as UserPage
-import PageTitle
 import Router exposing (Route)
-import Store exposing (Store, Action)
+import Store exposing (Action, Store)
 import Styles exposing (styles)
 import Views.Header as Header
 import Views.Nav as Nav
@@ -46,15 +46,15 @@ init route =
         style =
             Animation.style <| animationProps In
     in
-        { currentRoute = route
-        , nextRoute = route
-        , page = page
-        , style = style
-        , store = store
-        }
-            ! [ cmd
-              , maybeSetNotFoundTitle route
-              ]
+    { currentRoute = route
+    , nextRoute = route
+    , page = page
+    , style = style
+    , store = store
+    }
+        ! [ cmd
+          , maybeSetNotFoundTitle route
+          ]
 
 
 initPage : Route -> Store -> ( Page, Cmd Msg, Store )
@@ -67,24 +67,24 @@ initPage route store =
                         ( model, pageCmd, action ) =
                             CategoryPage.init category
                     in
-                        ( CategoryPage model
-                        , pageCmd
-                        , Store.map CategoryPageMsg action
-                        )
+                    ( CategoryPage model
+                    , pageCmd
+                    , Store.map CategoryPageMsg action
+                    )
 
                 Router.ViewItem id ->
                     let
                         ( model, action ) =
                             ItemPage.init store id
                     in
-                        ( ItemPage model, Cmd.none, Store.map ItemPageMsg action )
+                    ( ItemPage model, Cmd.none, Store.map ItemPageMsg action )
 
                 Router.ViewUser user ->
                     let
                         ( model, pageCmd, action ) =
                             UserPage.init user
                     in
-                        ( UserPage model, pageCmd, Store.map UserPageMsg action )
+                    ( UserPage model, pageCmd, Store.map UserPageMsg action )
 
                 _ ->
                     ( NotFoundPage, Cmd.none, Store.none )
@@ -92,14 +92,14 @@ initPage route store =
         ( newStore, storeCmd, outCmd ) =
             Store.update action store
     in
-        ( page
-        , Cmd.batch
-            [ pageCmd
-            , Cmd.map StoreMsg storeCmd
-            , outCmd
-            ]
-        , newStore
-        )
+    ( page
+    , Cmd.batch
+        [ pageCmd
+        , Cmd.map StoreMsg storeCmd
+        , outCmd
+        ]
+    , newStore
+    )
 
 
 
@@ -133,10 +133,10 @@ viewMain { page, store, style } =
                 NotFoundPage ->
                     NotFoundPage.view
     in
-        fromUnstyled <|
-            UnstyledHtml.main_ (Animation.render style)
-                [ toUnstyled content
-                ]
+    fromUnstyled <|
+        UnstyledHtml.main_ (Animation.render style)
+            [ toUnstyled content
+            ]
 
 
 
@@ -176,30 +176,30 @@ update msg model =
                 ( page, cmd, store ) =
                     initPage route model.store
             in
-                ( { model
-                    | currentRoute = route
-                    , page = page
-                    , store = store
-                    , style = Animation.interrupt [ animate In ] model.style
-                  }
-                , cmd
-                )
+            ( { model
+                | currentRoute = route
+                , page = page
+                , store = store
+                , style = Animation.interrupt [ animate In ] model.style
+              }
+            , cmd
+            )
 
         ( AnimationMsg animationMsg, _ ) ->
             let
                 ( style, cmd ) =
                     Animation.Messenger.update animationMsg model.style
             in
-                ( { model | style = style }, cmd )
+            ( { model | style = style }, cmd )
 
         ( StoreMsg action, _ ) ->
             let
                 ( store, cmd, outCmd ) =
                     Store.update action model.store
             in
-                ( { model | store = store }
-                , Cmd.batch [ Cmd.map StoreMsg cmd, outCmd ]
-                )
+            ( { model | store = store }
+            , Cmd.batch [ Cmd.map StoreMsg cmd, outCmd ]
+            )
 
         ( CategoryPageMsg msg, CategoryPage pageModel ) ->
             let
@@ -209,7 +209,7 @@ update msg model =
                 ( store, cmd ) =
                     updateStoreWith CategoryPageMsg action model.store
             in
-                ( { model | page = CategoryPage newPageModel, store = store }, cmd )
+            ( { model | page = CategoryPage newPageModel, store = store }, cmd )
 
         ( UserPageMsg msg, UserPage pageModel ) ->
             let
@@ -219,7 +219,7 @@ update msg model =
                 ( store, cmd ) =
                     updateStoreWith UserPageMsg action model.store
             in
-                ( { model | page = UserPage newPageModel, store = store }, cmd )
+            ( { model | page = UserPage newPageModel, store = store }, cmd )
 
         ( ItemPageMsg msg, ItemPage pageModel ) ->
             let
@@ -229,9 +229,9 @@ update msg model =
                 ( store, cmd ) =
                     updateStoreWith ItemPageMsg action model.store
             in
-                ( { model | page = ItemPage newPageModel, store = store }
-                , Cmd.batch [ Cmd.map ItemPageMsg pageCmd, cmd ]
-                )
+            ( { model | page = ItemPage newPageModel, store = store }
+            , Cmd.batch [ Cmd.map ItemPageMsg pageCmd, cmd ]
+            )
 
         -- Msgs arriving for the wrong model
         ( _, _ ) ->
@@ -278,7 +278,7 @@ updateStoreWith f action store =
         ( newStore, cmd, outCmd ) =
             Store.update (Store.map f action) store
     in
-        ( newStore, Cmd.batch [ Cmd.map StoreMsg cmd, outCmd ] )
+    ( newStore, Cmd.batch [ Cmd.map StoreMsg cmd, outCmd ] )
 
 
 

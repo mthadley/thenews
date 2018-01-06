@@ -23,5 +23,8 @@ test:
 watch:
 	@find src | entr make
 
+format:
+	@elm-format --yes src/ tests/
+
 pages: all
 	@gh-pages -d dist

@@ -2,10 +2,10 @@ module Api exposing (..)
 
 import Http exposing (Request)
 import Json.Decode as Decode
+import RemoteData exposing (WebData)
 import Task exposing (Task)
 import Types.Item as Item exposing (Item)
 import Types.User as User exposing (User)
-import RemoteData exposing (WebData)
 
 
 type alias Task a =
@@ -63,7 +63,7 @@ requestItems =
 requestItem : Int -> Task Item
 requestItem id =
     Http.toTask <|
-        Http.get (requestUrl <| "item/" ++ (toString id)) Item.decode
+        Http.get (requestUrl <| "item/" ++ toString id) Item.decode
 
 
 requestUrl : String -> String

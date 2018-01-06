@@ -1,10 +1,10 @@
 module Views.Header exposing (view)
 
+import Api
+import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Router
-import Api
-import Elements
 
 
 splash : String

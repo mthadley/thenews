@@ -45,7 +45,7 @@ viewNavItem route ( name, category ) =
             else
                 " "
     in
-        li []
-            [ Elements.navLink [ Router.linkTo <| Router.View category ]
-                [ text <| indicator ++ name ]
-            ]
+    li []
+        [ Elements.navLink [ Router.linkTo <| Router.View category ]
+            [ text <| indicator ++ name ]
+        ]

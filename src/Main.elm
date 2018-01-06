@@ -1,9 +1,9 @@
 module Main exposing (..)
 
 import App exposing (Model, Msg, init, subscriptions, update, view)
-import Router
-import Navigation
 import Html.Styled exposing (toUnstyled)
+import Navigation
+import Router
 
 
 main : Program Never Model Msg

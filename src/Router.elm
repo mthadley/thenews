@@ -61,12 +61,12 @@ reverse route =
                     "404"
 
                 ViewItem id ->
-                    "item/" ++ (toString id)
+                    "item/" ++ toString id
 
                 ViewUser id ->
                     "user/" ++ id
     in
-        "#" ++ path
+    "#" ++ path
 
 
 linkTo : Route -> Html.Attribute msg
