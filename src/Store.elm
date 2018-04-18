@@ -225,7 +225,7 @@ getItem =
 
 getItems : Store -> List Item.Id -> WebData (List Item)
 getItems store ids =
-    fromList <| List.map (getItem store) ids
+    RemoteData.fromList <| List.map (getItem store) ids
 
 
 pageSize : Int
@@ -250,11 +250,6 @@ setLoading item =
 fetchItem : Item.Id -> Cmd (Action msg)
 fetchItem id =
     Api.send (RecieveItem id) <| Api.requestItem <| Tagged.untag id
-
-
-fromList : List (WebData a) -> WebData (List a)
-fromList =
-    List.foldr (RemoteData.map2 (::)) (Success [])
 
 
 noop : a -> ( a, Cmd b, Cmd c )
