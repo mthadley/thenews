@@ -1,4 +1,4 @@
-ENVIRONMENT = development
+ENVIRONMENT ?= development
 OUT = dist
 ELM_MAIN = $(OUT)/elm.js
 ELM_FILES = $(shell find src -iname "*.elm")
