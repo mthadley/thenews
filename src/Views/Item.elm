@@ -114,9 +114,10 @@ getTitle item =
 
 
 spanOrLink : Maybe String -> String -> Html msg
-spanOrLink href content =
-    if href == Nothing then
-        span [] [ text content ]
+spanOrLink maybeHref content =
+    case maybeHref of
+        Just href ->
+            a [ Attr.href href ] [ text content ]
 
-    else
-        a [ Attr.href <| Maybe.withDefault "#" href ] [ text content ]
+        Nothing ->
+            span [] [ text content ]

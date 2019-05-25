@@ -142,4 +142,13 @@ htmlContent =
 
 showMore : Element msg
 showMore =
-    styled Html.a [ fontWeight bold ]
+    styled Html.button
+        [ backgroundColor transparent
+        , borderWidth zero
+        , fontWeight bold
+        , color inherit
+        , fontSize inherit
+        , fontFamily inherit
+        , textShadow inherit
+        , padding zero
+        ]
