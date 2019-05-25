@@ -1,30 +1,66 @@
 module Util.DateFormat exposing (format)
 
-import Time
+import Time exposing (Month(..), Zone)
 
 
-format : Int -> String
-format =
-    formatDate << Time.millisToPosix
+format : Zone -> Int -> String
+format zone =
+    formatDate zone << Time.millisToPosix << (*) 1000
 
 
-formatDate : Time.Posix -> String
-formatDate date =
-    "TODO: Fix time format"
-
-
-
--- (toString <| Date.month date)
---     ++ " "
---     ++ (toString <| Date.day date)
---     ++ ", "
---     ++ (toString <| Date.year date)
---     ++ " at "
---     ++ (paddedString <| Date.hour date)
---     ++ ":"
---     ++ (paddedString <| Date.minute date)
+formatDate : Zone -> Time.Posix -> String
+formatDate zone posix =
+    formatMonth zone posix
+        ++ " "
+        ++ (String.fromInt <| Time.toDay zone posix)
+        ++ ", "
+        ++ (String.fromInt <| Time.toYear zone posix)
+        ++ " at "
+        ++ (paddedString <| Time.toHour zone posix)
+        ++ ":"
+        ++ (paddedString <| Time.toMinute zone posix)
 
 
 paddedString : Int -> String
 paddedString =
     String.padLeft 2 '0' << String.fromInt
+
+
+formatMonth : Zone -> Time.Posix -> String
+formatMonth zone posix =
+    case Time.toMonth zone posix of
+        Jan ->
+            "Jan"
+
+        Feb ->
+            "Feb"
+
+        Mar ->
+            "Mar"
+
+        Apr ->
+            "Apr"
+
+        May ->
+            "May"
+
+        Jun ->
+            "Jun"
+
+        Jul ->
+            "Jul"
+
+        Aug ->
+            "Aug"
+
+        Sep ->
+            "Sep"
+
+        Oct ->
+            "Oct"
+
+        Nov ->
+            "Nov"
+
+        Dec ->
+            "Dec"

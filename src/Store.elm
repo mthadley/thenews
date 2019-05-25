@@ -6,6 +6,7 @@ module Store exposing
     , getItem
     , getItems
     , getUser
+    , getZone
     , init
     , map
     , none
@@ -23,6 +24,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Tagged exposing (Tagged)
 import Tagged.Dict exposing (TaggedDict)
 import Task
+import Time
 import Types.Item as Item exposing (Item)
 import Types.User as User exposing (User)
 import Util.Tuple exposing (mapSecond, mapThird)
@@ -32,6 +34,7 @@ type alias Maps =
     { categories : Dict String (WebData (List Item.Id))
     , items : TaggedDict Item.Ident Int (WebData Item)
     , users : TaggedDict User.Ident String (WebData User)
+    , zone : Time.Zone
     }
 
 
@@ -41,13 +44,16 @@ type Store
     = Store Maps
 
 
-init : Store
+init : ( Store, Cmd (Action msg) )
 init =
-    Store
+    ( Store
         { categories = Dict.empty
         , users = Tagged.Dict.empty
         , items = Tagged.Dict.empty
+        , zone = Time.utc
         }
+    , Task.perform RecieveTimeZone Time.here
+    )
 
 
 type Action msg
@@ -61,6 +67,7 @@ type Action msg
     | RequestUser User.Id
     | RequestCategory Category
     | RecieveCategory Category (WebData (List Item.Id))
+    | RecieveTimeZone Time.Zone
 
 
 update : Action msg -> Store -> ( Store, Cmd (Action msg), Cmd msg )
@@ -140,6 +147,11 @@ update action ((Store maps) as store) =
                 }
                 |> noop
 
+        RecieveTimeZone zone ->
+            Store
+                { maps | zone = zone }
+                |> noop
+
 
 none : Action msg
 none =
@@ -184,6 +196,9 @@ map f action =
         RecieveCategory category data ->
             RecieveCategory category data
 
+        RecieveTimeZone zone ->
+            RecieveTimeZone zone
+
 
 tag : msg -> Action msg -> Action msg
 tag =
@@ -225,6 +240,11 @@ getItem =
 getItems : Store -> List Item.Id -> WebData (List Item)
 getItems store ids =
     RemoteData.fromList <| List.map (getItem store) ids
+
+
+getZone : Store -> Time.Zone
+getZone (Store { zone }) =
+    zone
 
 
 pageSize : Int

@@ -42,15 +42,18 @@ init _ url key =
         route =
             Router.parse url
 
-        ( page, cmd, store ) =
-            initPage route Store.init
+        ( store, storeCmd ) =
+            Store.init
+
+        ( page, cmd, newStore ) =
+            initPage route store
     in
     ( { route = route
       , key = key
       , page = page
-      , store = store
+      , store = newStore
       }
-    , cmd
+    , Cmd.batch [ cmd, Cmd.map StoreMsg storeCmd ]
     )
 
 
