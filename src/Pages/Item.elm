@@ -97,7 +97,12 @@ view store model =
         ( Success item, Just comment ) ->
             ( getTitle item
             , div []
-                [ ItemView.view [ ItemView.textContent, ItemView.by, ItemView.score ] item
+                [ ItemView.view (Store.getZone store)
+                    [ ItemView.textContent
+                    , ItemView.by
+                    , ItemView.score
+                    ]
+                    item
                 , viewCommentsContainer store model.comments item comment
                 ]
             )

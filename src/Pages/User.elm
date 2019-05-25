@@ -4,6 +4,7 @@ import Html.Styled exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
 import Tagged
+import Time
 import Types.Item exposing (Item)
 import Types.User as User exposing (User)
 import Util.Html exposing (viewHtmlContent, viewMaybe)
@@ -39,7 +40,7 @@ view store model =
             ( Tagged.untag user.id
             , section []
                 [ viewUser user
-                , viewSubmissions model <| getUserItems store user.id
+                , viewSubmissions (Store.getZone store) model <| getUserItems store user.id
                 ]
             )
 
@@ -58,14 +59,14 @@ viewUser user =
         ]
 
 
-viewSubmissions : Model -> WebData (List Item) -> Html msg
-viewSubmissions { loadText } items =
+viewSubmissions : Time.Zone -> Model -> WebData (List Item) -> Html msg
+viewSubmissions zone { loadText } items =
     let
         content =
             case items of
                 Success items_ ->
                     List.map
-                        (ItemView.view
+                        (ItemView.view zone
                             [ ItemView.textContent
                             , ItemView.score
                             , ItemView.comments

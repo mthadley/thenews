@@ -5,6 +5,7 @@ import Elements
 import Html.Styled exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
+import Time
 import Types.Item as Item exposing (Item)
 import Views.Item as ItemView
 import Views.LoadText as LoadText
@@ -38,7 +39,7 @@ view store model =
     case getCategoryItems model.category store of
         Success items ->
             ( Api.label model.category
-            , section [] <| List.indexedMap viewCategoryItem items
+            , section [] <| List.indexedMap (viewCategoryItem (Store.getZone store)) items
             )
 
         Loading ->
@@ -48,11 +49,16 @@ view store model =
             ( "Nothing...", text "There doesn't seem to be anything here." )
 
 
-viewCategoryItem : Int -> Item -> Html msg
-viewCategoryItem rank item =
+viewCategoryItem : Time.Zone -> Int -> Item -> Html msg
+viewCategoryItem zone rank item =
     Elements.categoryItem []
         [ Elements.itemRank [] [ text <| "#" ++ (String.fromInt <| 1 + rank) ]
-        , ItemView.view [ ItemView.by, ItemView.score, ItemView.comments ] item
+        , ItemView.view zone
+            [ ItemView.by
+            , ItemView.score
+            , ItemView.comments
+            ]
+            item
         ]
 
 

@@ -13,6 +13,7 @@ $(OUT)/%: src/%
 
 node_modules: package.json package-lock.json
 	npm install
+	touch $@
 
 .PHONY: test
 test: node_modules

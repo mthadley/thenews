@@ -4,7 +4,9 @@ import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Router
+import Store exposing (Store)
 import Tagged
+import Time
 import Types.Item exposing (Item, Type(..))
 import Util.DateFormat as DateFormat
 import Util.Html exposing (viewHtmlContent, viewIf, viewMaybe)
@@ -47,19 +49,19 @@ type alias Detail =
     ( String, Maybe String, Maybe String )
 
 
-view : List DetailType -> Item -> Html msg
-view details item =
+view : Time.Zone -> List DetailType -> Item -> Html msg
+view zone details item =
     Elements.item []
         [ Elements.itemHeader []
             [ spanOrLink item.url <| getTitle item ]
         , viewIf (List.member TextContent details) <|
             viewMaybe viewHtmlContent item.text
-        , footer [] <| viewDetails item details
+        , footer [] <| viewDetails zone item details
         ]
 
 
-getDetail : Item -> DetailType -> Detail
-getDetail item type_ =
+getDetail : Time.Zone -> Item -> DetailType -> Detail
+getDetail zone item type_ =
     case type_ of
         By ->
             ( "By "
@@ -81,7 +83,7 @@ getDetail item type_ =
 
         Created ->
             ( ""
-            , Just <| DateFormat.format item.time
+            , Just <| DateFormat.format zone item.time
             , Nothing
             )
 
@@ -89,13 +91,13 @@ getDetail item type_ =
             ( "", Nothing, Nothing )
 
 
-viewDetails : Item -> List DetailType -> List (Html msg)
-viewDetails item =
+viewDetails : Time.Zone -> Item -> List DetailType -> List (Html msg)
+viewDetails zone item =
     let
         detail ( name, value, href ) =
             Maybe.map (spanOrLink href << (++) name) value
     in
-    List.intersperse (text " • ") << List.filterMap (detail << getDetail item)
+    List.intersperse (text " • ") << List.filterMap (detail << getDetail zone item)
 
 
 getTitle : Item -> String
