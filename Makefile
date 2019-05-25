@@ -1,10 +1,10 @@
 ENVIRONMENT ?= development
 OUT = dist
-ELM_MAIN = $(OUT)/elm.js
+ELM_OUT = $(OUT)/elm.js
 ELM_FILES = $(shell find src -iname "*.elm")
 
 .PHONY: all
-all: $(ELM_MAIN) $(OUT)/index.html $(OUT)/index.js
+all: $(ELM_OUT) $(OUT)/index.html $(OUT)/index.js
 
 ifeq ($(ENVIRONMENT), production)
 CFLAGS = --optimize
@@ -12,8 +12,13 @@ else
 CFLAGS = --debug
 endif
 
-$(ELM_MAIN): $(ELM_FILES) node_modules
+$(ELM_OUT): $(ELM_FILES) node_modules
 	yes | npx elm make src/Main.elm $(CFLAGS) --output $@
+ifeq ($(ENVIRONMENT), production)
+	npx terser --mangle \
+		--compress "pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe" \
+		-o $(ELM_OUT) -- $(ELM_OUT)
+endif
 
 $(OUT)/%: src/%
 	@cp $< $@
