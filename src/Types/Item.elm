@@ -1,16 +1,15 @@
-module Types.Item
-    exposing
-        ( Id
-        , Ident
-        , Item
-        , PollOpt
-        , Type(..)
-        , decode
-        , decodeType
-        , pollOpt
-        )
+module Types.Item exposing
+    ( Id
+    , Ident
+    , Item
+    , PollOpt
+    , Type(..)
+    , decode
+    , decodeType
+    , pollOpt
+    )
 
-import Json.Decode exposing (..)
+import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as Pipeline exposing (optional, required)
 import Tagged exposing (Tagged)
 import Types.Item.Id
@@ -64,21 +63,21 @@ type alias PollOpt =
 
 decode : Decoder Item
 decode =
-    Pipeline.decode Item
-        |> optional "by" (tag string) (Tagged.tag "Deleted")
-        |> optional "dead" bool False
-        |> optional "deleted" bool False
-        |> optionalMaybe "descendants" int
-        |> required "id" (tag int)
-        |> optionalMaybe "kids" (list <| tag int)
-        |> optionalMaybe "parent" (tag int)
-        |> optionalMaybe "parts" (list pollOpt)
-        |> optionalMaybe "score" int
-        |> optionalMaybe "text" string
-        |> required "time" int
-        |> optionalMaybe "title" string
-        |> required "type" (Json.Decode.map decodeType string)
-        |> optionalMaybe "url" string
+    Decode.succeed Item
+        |> optional "by" (tag Decode.string) (Tagged.tag "Deleted")
+        |> optional "dead" Decode.bool False
+        |> optional "deleted" Decode.bool False
+        |> optionalMaybe "descendants" Decode.int
+        |> required "id" (tag Decode.int)
+        |> optionalMaybe "kids" (Decode.list <| tag Decode.int)
+        |> optionalMaybe "parent" (tag Decode.int)
+        |> optionalMaybe "parts" (Decode.list pollOpt)
+        |> optionalMaybe "score" Decode.int
+        |> optionalMaybe "text" Decode.string
+        |> required "time" Decode.int
+        |> optionalMaybe "title" Decode.string
+        |> required "type" (Decode.map decodeType Decode.string)
+        |> optionalMaybe "url" Decode.string
 
 
 decodeType : String -> Type
@@ -105,10 +104,10 @@ decodeType str =
 
 pollOpt : Decoder PollOpt
 pollOpt =
-    Pipeline.decode PollOpt
-        |> required "by" (tag string)
-        |> required "int" int
-        |> required "parent" (tag int)
-        |> required "score" int
-        |> required "text" string
-        |> required "time" int
+    Decode.succeed PollOpt
+        |> required "by" (tag Decode.string)
+        |> required "int" Decode.int
+        |> required "parent" (tag Decode.int)
+        |> required "score" Decode.int
+        |> required "text" Decode.string
+        |> required "time" Decode.int

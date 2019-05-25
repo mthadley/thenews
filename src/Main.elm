@@ -1,17 +1,18 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import App exposing (Model, Msg, init, subscriptions, update, view)
+import Browser
 import Html.Styled exposing (toUnstyled)
-import Navigation
 import Router
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Navigation.program
-        (App.RouteChange << Router.parseLocation)
-        { init = init << Router.parseLocation
-        , view = toUnstyled << view
+    Browser.application
+        { init = init
+        , view = view
         , update = update
         , subscriptions = subscriptions
+        , onUrlRequest = App.UrlRequest
+        , onUrlChange = App.UrlChange << Router.parse
         }

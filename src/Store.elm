@@ -1,22 +1,21 @@
-module Store
-    exposing
-        ( Action
-        , Store
-        , batch
-        , getCategory
-        , getItem
-        , getItems
-        , getUser
-        , init
-        , map
-        , none
-        , pageSize
-        , requestCategory
-        , requestItem
-        , requestUser
-        , tag
-        , update
-        )
+module Store exposing
+    ( Action
+    , Store
+    , batch
+    , getCategory
+    , getItem
+    , getItems
+    , getUser
+    , init
+    , map
+    , none
+    , pageSize
+    , requestCategory
+    , requestItem
+    , requestUser
+    , tag
+    , update
+    )
 
 import Api exposing (Category)
 import Dict exposing (Dict)
@@ -70,14 +69,14 @@ update action ((Store maps) as store) =
         None ->
             noop store
 
-        Tagged msg action ->
-            update action store
+        Tagged msg action_ ->
+            update action_ store
                 |> mapSecond (Cmd.map <| TaggedResult msg)
 
-        TaggedResult msg action ->
+        TaggedResult msg action_ ->
             let
                 ( newStore, cmd, outCmd ) =
-                    update action store
+                    update action_ store
             in
             ( newStore
             , cmd
@@ -89,8 +88,8 @@ update action ((Store maps) as store) =
 
         Batch actions ->
             let
-                applyActions action ( store, cmd, outCmd ) =
-                    update action store
+                applyActions action_ ( store_, cmd, outCmd ) =
+                    update action_ store_
                         |> mapSecond (\c -> Cmd.batch [ cmd, c ])
                         |> mapThird (\c -> Cmd.batch [ outCmd, c ])
             in
@@ -158,11 +157,11 @@ map f action =
         None ->
             None
 
-        Tagged msg action ->
-            Tagged (f msg) <| map f action
+        Tagged msg taggedAction ->
+            Tagged (f msg) <| map f taggedAction
 
-        TaggedResult msg action ->
-            TaggedResult (f msg) <| map f action
+        TaggedResult msg taggedAction ->
+            TaggedResult (f msg) <| map f taggedAction
 
         Batch actions ->
             Batch <| List.map (map f) actions

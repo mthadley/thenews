@@ -1,7 +1,6 @@
 module Pages.User exposing (Model, Msg, init, subscriptions, update, view)
 
 import Html.Styled exposing (..)
-import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
 import Tagged
@@ -10,6 +9,7 @@ import Types.User as User exposing (User)
 import Util.Html exposing (viewHtmlContent, viewMaybe)
 import Views.Item as ItemView
 import Views.LoadText as LoadText
+
 
 
 -- MODEL
@@ -21,10 +21,9 @@ type alias Model =
     }
 
 
-init : User.Id -> ( Model, Cmd msg, Action Msg )
+init : User.Id -> ( Model, Action Msg )
 init user =
     ( Model user LoadText.init
-    , PageTitle.set <| Tagged.untag user
     , Store.tag RecieveUser <| Store.requestUser user
     )
 
@@ -33,20 +32,22 @@ init user =
 -- VIEW
 
 
-view : Store -> Model -> Html msg
+view : Store -> Model -> ( String, Html msg )
 view store model =
     case Store.getUser store model.user of
         Success user ->
-            section []
+            ( Tagged.untag user.id
+            , section []
                 [ viewUser user
                 , viewSubmissions model <| getUserItems store user.id
                 ]
+            )
 
         Loading ->
-            LoadText.view model.loadText
+            ( LoadText.viewString model.loadText, LoadText.view model.loadText )
 
         _ ->
-            text "There doesn't seem to be anything here."
+            ( "Nothing...", text "There doesn't seem to be anything here." )
 
 
 viewUser : User -> Html msg
@@ -62,7 +63,7 @@ viewSubmissions { loadText } items =
     let
         content =
             case items of
-                Success items ->
+                Success items_ ->
                     List.map
                         (ItemView.view
                             [ ItemView.textContent
@@ -71,7 +72,7 @@ viewSubmissions { loadText } items =
                             , ItemView.created
                             ]
                         )
-                        items
+                        items_
 
                 Loading ->
                     [ LoadText.view loadText ]
@@ -107,7 +108,7 @@ update store msg model =
                 |> List.take Store.pageSize
                 |> List.map Store.requestItem
                 |> Store.batch
-                |> (,) model
+                |> Tuple.pair model
 
 
 getUserItems : Store -> User.Id -> WebData (List Item)

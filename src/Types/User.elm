@@ -1,6 +1,6 @@
 module Types.User exposing (Id, Ident, User, decode)
 
-import Json.Decode exposing (..)
+import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as Pipeline exposing (optional, required)
 import Types.Item.Id as Item
 import Types.User.Id
@@ -27,10 +27,10 @@ type alias User =
 
 decode : Decoder User
 decode =
-    Pipeline.decode User
-        |> optionalMaybe "about" string
-        |> required "created" int
-        |> optional "delay" int 0
-        |> required "id" (tag string)
-        |> required "karma" int
-        |> required "submitted" (list <| tag int)
+    Decode.succeed User
+        |> optionalMaybe "about" Decode.string
+        |> required "created" Decode.int
+        |> optional "delay" Decode.int 0
+        |> required "id" (tag Decode.string)
+        |> required "karma" Decode.int
+        |> required "submitted" (Decode.list <| tag Decode.int)

@@ -1,14 +1,14 @@
-module Pages.Category exposing (..)
+module Pages.Category exposing (Model, Msg(..), getCategoryItems, init, subscriptions, update, view, viewCategoryItem)
 
 import Api exposing (Category)
 import Elements
 import Html.Styled exposing (..)
-import PageTitle
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
 import Types.Item as Item exposing (Item)
 import Views.Item as ItemView
 import Views.LoadText as LoadText
+
 
 
 -- MODEL
@@ -20,12 +20,11 @@ type alias Model =
     }
 
 
-init : Category -> ( Model, Cmd msg, Action Msg )
+init : Category -> ( Model, Action Msg )
 init category =
     ( { category = category
       , loadText = LoadText.init
       }
-    , PageTitle.set <| Api.label category
     , Store.tag RecieveCategory <| Store.requestCategory category
     )
 
@@ -34,23 +33,25 @@ init category =
 -- VIEW
 
 
-view : Store -> Model -> Html msg
+view : Store -> Model -> ( String, Html msg )
 view store model =
     case getCategoryItems model.category store of
         Success items ->
-            section [] <| List.indexedMap viewCategoryItem items
+            ( Api.label model.category
+            , section [] <| List.indexedMap viewCategoryItem items
+            )
 
         Loading ->
-            LoadText.view model.loadText
+            ( "Loading...", LoadText.view model.loadText )
 
         _ ->
-            text "There doesn't seem to be anything here."
+            ( "Nothing...", text "There doesn't seem to be anything here." )
 
 
 viewCategoryItem : Int -> Item -> Html msg
 viewCategoryItem rank item =
     Elements.categoryItem []
-        [ Elements.itemRank [] [ text <| "#" ++ (toString <| 1 + rank) ]
+        [ Elements.itemRank [] [ text <| "#" ++ (String.fromInt <| 1 + rank) ]
         , ItemView.view [ ItemView.by, ItemView.score, ItemView.comments ] item
         ]
 
@@ -79,7 +80,7 @@ update store msg model =
                 |> RemoteData.withDefault []
                 |> List.map Store.requestItem
                 |> Store.batch
-                |> (,) model
+                |> Tuple.pair model
 
 
 getCategoryItems : Category -> Store -> WebData (List Item)

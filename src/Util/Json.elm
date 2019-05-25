@@ -1,13 +1,8 @@
-module Util.Json exposing (maybeToString, optionalMaybe, tag)
+module Util.Json exposing (optionalMaybe, tag)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (optional)
 import Tagged exposing (Tagged)
-
-
-maybeToString : Maybe a -> Maybe String
-maybeToString =
-    Maybe.map toString
 
 
 optionalMaybe : String -> Decoder a -> (Decoder (Maybe a -> b) -> Decoder b)

@@ -1,4 +1,4 @@
-module Elements exposing (..)
+module Elements exposing (Element, author, categoryItem, comment, commentLevel, container, header, headerAscii, headerTagline, htmlContent, item, itemHeader, itemRank, nav, navLink, navList, showMore)
 
 import Css exposing (..)
 import Css.Media as Media exposing (only, screen, withMedia)
@@ -34,14 +34,14 @@ comment =
 commentLevel : Element msg
 commentLevel =
     styled Html.div
-        [ marginLeft commentLevelMargin
+        [ marginLeft (px commentLevelMargin)
         , position relative
         , after
             [ backgroundColor colors.primary
             , termShadow
             , property "content" "''"
             , height <| pct 100
-            , left <| px -1 |*| commentLevelMargin
+            , left <| px (-1 * commentLevelMargin)
             , opacity <| num 0.8
             , position absolute
             , top zero

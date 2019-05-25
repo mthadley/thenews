@@ -1,13 +1,13 @@
-module Router exposing (..)
+module Router exposing (Route(..), linkTo, parse, reverse)
 
 import Api exposing (Category(..))
 import Html.Styled as Html
 import Html.Styled.Attributes as Attr
-import Navigation exposing (Location)
 import Tagged
 import Types.Item as Item
 import Types.User as User
-import UrlParser exposing (..)
+import Url exposing (Url)
+import Url.Parser as Url exposing ((</>), Parser)
 
 
 type Route
@@ -17,24 +17,24 @@ type Route
     | NotFound
 
 
-parseRoute : Parser (Route -> a) a
-parseRoute =
-    oneOf
-        [ map (View Top) top
-        , map (View Ask) <| s "ask"
-        , map (View Best) <| s "best"
-        , map (View Job) <| s "job"
-        , map (View New) <| s "new"
-        , map (View Show) <| s "show"
-        , map (View Top) <| s "top"
-        , map (ViewItem << Tagged.tag) <| s "item" </> int
-        , map (ViewUser << Tagged.tag) <| s "user" </> string
+parser : Parser (Route -> a) a
+parser =
+    Url.oneOf
+        [ Url.map (View Top) Url.top
+        , Url.map (View Ask) <| Url.s "ask"
+        , Url.map (View Best) <| Url.s "best"
+        , Url.map (View Job) <| Url.s "job"
+        , Url.map (View New) <| Url.s "new"
+        , Url.map (View Show) <| Url.s "show"
+        , Url.map (View Top) <| Url.s "top"
+        , Url.map (ViewItem << Tagged.tag) <| Url.s "item" </> Url.int
+        , Url.map (ViewUser << Tagged.tag) <| Url.s "user" </> Url.string
         ]
 
 
-parseLocation : Location -> Route
-parseLocation =
-    Maybe.withDefault NotFound << parseHash parseRoute
+parse : Url -> Route
+parse =
+    Maybe.withDefault NotFound << Url.parse parser
 
 
 reverse : Route -> String
@@ -64,7 +64,7 @@ reverse route =
                     "404"
 
                 ViewItem id ->
-                    "item/" ++ (toString <| Tagged.untag id)
+                    "item/" ++ (String.fromInt <| Tagged.untag id)
 
                 ViewUser id ->
                     "user/" ++ Tagged.untag id

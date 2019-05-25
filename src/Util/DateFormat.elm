@@ -1,26 +1,30 @@
 module Util.DateFormat exposing (format)
 
-import Date exposing (Date)
+import Time
 
 
 format : Int -> String
 format =
-    formatDate << Date.fromTime << toFloat << (*) 1000
+    formatDate << Time.millisToPosix
 
 
-formatDate : Date -> String
+formatDate : Time.Posix -> String
 formatDate date =
-    (toString <| Date.month date)
-        ++ " "
-        ++ (toString <| Date.day date)
-        ++ ", "
-        ++ (toString <| Date.year date)
-        ++ " at "
-        ++ (paddedString <| Date.hour date)
-        ++ ":"
-        ++ (paddedString <| Date.minute date)
+    "TODO: Fix time format"
+
+
+
+-- (toString <| Date.month date)
+--     ++ " "
+--     ++ (toString <| Date.day date)
+--     ++ ", "
+--     ++ (toString <| Date.year date)
+--     ++ " at "
+--     ++ (paddedString <| Date.hour date)
+--     ++ ":"
+--     ++ (paddedString <| Date.minute date)
 
 
 paddedString : Int -> String
 paddedString =
-    String.padLeft 2 '0' << toString
+    String.padLeft 2 '0' << String.fromInt

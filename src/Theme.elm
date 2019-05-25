@@ -1,4 +1,4 @@
-module Theme exposing (..)
+module Theme exposing (colors, commentLevelMargin, fontSizes, termShadow, termShadowText)
 
 import Css exposing (..)
 
@@ -15,9 +15,9 @@ fontSizes =
     { comment = px 14, base = px 16, h2 = px 18, h3 = px 16 }
 
 
-commentLevelMargin : Px
+commentLevelMargin : Float
 commentLevelMargin =
-    px 8
+    8
 
 
 termShadow : Style

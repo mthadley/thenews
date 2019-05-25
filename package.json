@@ -1,0 +1,22 @@
+{
+  "name": "thenews",
+  "version": "1.0.0",
+  "description": "A Hacker News reader in Elm!",
+  "private": true,
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mthadley/thenews.git"
+  },
+  "author": "Michael Hadley",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mthadley/thenews/issues"
+  },
+  "homepage": "https://github.com/mthadley/thenews#readme",
+  "dependencies": {
+    "elm": "^0.19.0-no-deps",
+    "elm-format": "^0.8.1",
+    "elm-test": "^0.19.0-rev6"
+  }
+}

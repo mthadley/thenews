@@ -1,4 +1,17 @@
-module Api exposing (..)
+module Api exposing
+    ( Category(..)
+    , Task
+    , base
+    , categoryEndpoint
+    , label
+    , requestCategoryIds
+    , requestItem
+    , requestItems
+    , requestUrl
+    , requestUser
+    , send
+    , stringId
+    )
 
 import Http exposing (Request)
 import Json.Decode as Decode
@@ -64,7 +77,7 @@ requestItems =
 requestItem : Int -> Task Item
 requestItem id =
     Http.toTask <|
-        Http.get (requestUrl <| "item/" ++ toString id) Item.decode
+        Http.get (requestUrl <| "item/" ++ String.fromInt id) Item.decode
 
 
 requestUrl : String -> String

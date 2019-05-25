@@ -8,7 +8,6 @@ import Tagged
 import Types.Item exposing (Item, Type(..))
 import Util.DateFormat as DateFormat
 import Util.Html exposing (viewHtmlContent, viewIf, viewMaybe)
-import Util.Json exposing (maybeToString)
 
 
 type DetailType
@@ -70,13 +69,13 @@ getDetail item type_ =
 
         Score ->
             ( "Score: "
-            , maybeToString item.score
+            , Maybe.map String.fromInt item.score
             , Nothing
             )
 
         Comments ->
             ( "Comments: "
-            , maybeToString item.descendants
+            , Maybe.map String.fromInt item.descendants
             , Just <| Router.reverse <| Router.ViewItem item.id
             )
 
@@ -116,5 +115,6 @@ spanOrLink : Maybe String -> String -> Html msg
 spanOrLink href content =
     if href == Nothing then
         span [] [ text content ]
+
     else
         a [ Attr.href <| Maybe.withDefault "#" href ] [ text content ]

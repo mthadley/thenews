@@ -1,7 +1,7 @@
-module Styles exposing (..)
+module Styles exposing (styles)
 
 import Css exposing (..)
-import Css.Foreign exposing (..)
+import Css.Global exposing (..)
 import Html.Styled exposing (Html)
 import Theme exposing (colors, fontSizes, termShadowText)
 
