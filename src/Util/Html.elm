@@ -29,7 +29,7 @@ pluralize singular plural count =
 viewHtmlContent : String -> Html msg
 viewHtmlContent content =
     Elements.htmlContent
-        [ Attr.property "innerHTML" <| Encode.string content ]
+        [ Attr.property "content" <| Encode.string content ]
         []
 
 
