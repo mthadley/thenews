@@ -1,11 +1,11 @@
 module Router exposing (Route(..), linkTo, parse, reverse)
 
 import Api exposing (Category(..))
+import Data.Item as Item
+import Data.User as User
 import Html.Styled as Html
 import Html.Styled.Attributes as Attr
 import Tagged
-import Types.Item as Item
-import Types.User as User
 import Url exposing (Url)
 import Url.Parser as Url exposing ((</>), Parser)
 

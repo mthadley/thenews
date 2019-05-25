@@ -1,5 +1,6 @@
 module Views.Item exposing (by, comments, created, score, textContent, view)
 
+import Data.Item exposing (Item, Type(..))
 import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
@@ -7,7 +8,6 @@ import Router
 import Store exposing (Store)
 import Tagged
 import Time
-import Types.Item exposing (Item, Type(..))
 import Util.DateFormat as DateFormat
 import Util.Html exposing (viewHtmlContent, viewIf, viewMaybe)
 

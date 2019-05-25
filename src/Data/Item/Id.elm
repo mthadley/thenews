@@ -1,4 +1,4 @@
-module Types.User.Id exposing (Id, Ident)
+module Data.Item.Id exposing (Id, Ident)
 
 import Tagged exposing (Tagged)
 
@@ -8,4 +8,4 @@ type Ident
 
 
 type alias Id =
-    Tagged Ident String
+    Tagged Ident Int

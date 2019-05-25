@@ -1,12 +1,12 @@
 module Pages.Category exposing (Model, Msg(..), getCategoryItems, init, subscriptions, update, view, viewCategoryItem)
 
 import Api exposing (Category)
+import Data.Item as Item exposing (Item)
 import Elements
 import Html.Styled exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
 import Time
-import Types.Item as Item exposing (Item)
 import Views.Item as ItemView
 import Views.LoadText as LoadText
 

@@ -1,4 +1,4 @@
-module Types.Item exposing
+module Data.Item exposing
     ( Id
     , Ident
     , Item
@@ -9,20 +9,20 @@ module Types.Item exposing
     , pollOpt
     )
 
+import Data.Item.Id
+import Data.User as User
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as Pipeline exposing (optional, required)
 import Tagged exposing (Tagged)
-import Types.Item.Id
-import Types.User as User
 import Util.Json exposing (optionalMaybe, tag)
 
 
 type alias Ident =
-    Types.Item.Id.Ident
+    Data.Item.Id.Ident
 
 
 type alias Id =
-    Types.Item.Id.Id
+    Data.Item.Id.Id
 
 
 type Type

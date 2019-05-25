@@ -19,14 +19,14 @@ module Store exposing
     )
 
 import Api exposing (Category)
+import Data.Item as Item exposing (Item)
+import Data.User as User exposing (User)
 import Dict exposing (Dict)
 import RemoteData exposing (RemoteData(..), WebData)
 import Tagged exposing (Tagged)
 import Tagged.Dict exposing (TaggedDict)
 import Task
 import Time
-import Types.Item as Item exposing (Item)
-import Types.User as User exposing (User)
 import Util.Tuple exposing (mapSecond, mapThird)
 
 

@@ -1,12 +1,12 @@
 module Pages.User exposing (Model, Msg, init, subscriptions, update, view)
 
+import Data.Item exposing (Item)
+import Data.User as User exposing (User)
 import Html.Styled exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
 import Tagged
 import Time
-import Types.Item exposing (Item)
-import Types.User as User exposing (User)
 import Util.Html exposing (viewHtmlContent, viewMaybe)
 import Views.Item as ItemView
 import Views.LoadText as LoadText

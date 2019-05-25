@@ -1,5 +1,6 @@
 module Pages.Item exposing (Model, Msg, init, subscriptions, update, view)
 
+import Data.Item as Item exposing (Item)
 import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Events exposing (onClick)
@@ -9,7 +10,6 @@ import Router exposing (Route)
 import Store exposing (Action, Store)
 import Tagged
 import Tagged.Dict as Dict exposing (TaggedDict)
-import Types.Item as Item exposing (Item)
 import Util.DateFormat as DateFormat
 import Util.Html
     exposing

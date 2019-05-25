@@ -1,18 +1,18 @@
-module Types.User exposing (Id, Ident, User, decode)
+module Data.User exposing (Id, Ident, User, decode)
 
+import Data.Item.Id as Item
+import Data.User.Id
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as Pipeline exposing (optional, required)
-import Types.Item.Id as Item
-import Types.User.Id
 import Util.Json exposing (optionalMaybe, tag)
 
 
 type alias Id =
-    Types.User.Id.Id
+    Data.User.Id.Id
 
 
 type alias Ident =
-    Types.User.Id.Ident
+    Data.User.Id.Ident
 
 
 type alias User =

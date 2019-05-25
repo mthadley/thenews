@@ -13,12 +13,12 @@ module Api exposing
     , stringId
     )
 
+import Data.Item as Item exposing (Item)
+import Data.User as User exposing (User)
 import Http exposing (Request)
 import Json.Decode as Decode
 import RemoteData exposing (WebData)
 import Task exposing (Task)
-import Types.Item as Item exposing (Item)
-import Types.User as User exposing (User)
 import Util.Json exposing (tag)
 
 
