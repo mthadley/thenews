@@ -14,8 +14,8 @@ module Api exposing
 import Data.Category as Category exposing (Category(..))
 import Data.Item as Item exposing (Item)
 import Data.User as User exposing (User)
-import Http exposing (Request)
-import Json.Decode as Decode
+import Http
+import Json.Decode as Decode exposing (Decoder)
 import RemoteData exposing (WebData)
 import Task exposing (Task)
 import Util.Json exposing (tag)
@@ -54,9 +54,8 @@ categoryEndpoint category =
 
 requestCategoryIds : Category -> Task (List Item.Id)
 requestCategoryIds category =
-    Decode.list (tag Decode.int)
-        |> Http.get (requestUrl <| categoryEndpoint category)
-        |> Http.toTask
+    get (requestUrl <| categoryEndpoint category)
+        (Decode.list <| tag Decode.int)
 
 
 requestItems : List Int -> Task (List Item)
@@ -66,8 +65,7 @@ requestItems =
 
 requestItem : Int -> Task Item
 requestItem id =
-    Http.toTask <|
-        Http.get (requestUrl <| "item/" ++ String.fromInt id) Item.decode
+    get (requestUrl <| "item/" ++ String.fromInt id) Item.decode
 
 
 requestUrl : String -> String
@@ -77,8 +75,7 @@ requestUrl endpoint =
 
 requestUser : String -> Task User
 requestUser id =
-    Http.toTask <|
-        Http.get (requestUrl <| "user/" ++ id) User.decode
+    get (requestUrl <| "user/" ++ id) User.decode
 
 
 send : (WebData a -> msg) -> Task a -> Cmd msg
@@ -89,3 +86,37 @@ send msg =
 stringId : Category -> String
 stringId =
     categoryEndpoint
+
+
+get : String -> Decoder a -> Task a
+get url decoder =
+    Http.task
+        { method = "GET"
+        , headers = []
+        , url = url
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , resolver =
+            Http.stringResolver <|
+                \response ->
+                    case response of
+                        Http.BadUrl_ url_ ->
+                            Err (Http.BadUrl url_)
+
+                        Http.Timeout_ ->
+                            Err Http.Timeout
+
+                        Http.NetworkError_ ->
+                            Err Http.NetworkError
+
+                        Http.BadStatus_ metadata body ->
+                            Err (Http.BadStatus metadata.statusCode)
+
+                        Http.GoodStatus_ metadata body ->
+                            case Decode.decodeString decoder body of
+                                Ok value ->
+                                    Ok value
+
+                                Err err ->
+                                    Err (Http.BadBody (Decode.errorToString err))
+        }
