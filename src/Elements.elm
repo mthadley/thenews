@@ -137,7 +137,10 @@ container =
 
 htmlContent : Element msg
 htmlContent =
-    styled (Html.node "post-content") [ marginBottom <| px 12 ]
+    styled (Html.node "post-content")
+        [ marginBottom <| px 12
+        , display block
+        ]
 
 
 showMore : Element msg
