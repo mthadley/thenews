@@ -41,10 +41,8 @@ type Msg
 
 
 update : Msg -> Model -> Model
-update msg model =
-    case msg of
-        Tick ->
-            { model | count = remainderBy (model.count + 1) 4 }
+update Tick model =
+    { model | count = modBy 4 (model.count + 1) }
 
 
 subscriptions : Bool -> Sub Msg
