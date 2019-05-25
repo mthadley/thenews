@@ -110,7 +110,7 @@ view model =
         ( title, content ) =
             viewMain model
     in
-    { title = title
+    { title = "TheNews: " ++ title
     , body =
         [ Elements.container []
             [ styles
