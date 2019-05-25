@@ -1,12 +1,10 @@
-module Util.Html
-    exposing
-        ( empty
-        , jsLink
-        , pluralize
-        , viewHtmlContent
-        , viewIf
-        , viewMaybe
-        )
+module Util.Html exposing
+    ( empty
+    , pluralize
+    , viewHtmlContent
+    , viewIf
+    , viewMaybe
+    )
 
 import Elements
 import Html.Styled exposing (..)
@@ -23,13 +21,9 @@ pluralize : String -> String -> Int -> String
 pluralize singular plural count =
     if count > 1 then
         plural
+
     else
         singular
-
-
-jsLink : Attribute msg
-jsLink =
-    Attr.href "javascript:;"
 
 
 viewHtmlContent : String -> Html msg
@@ -43,6 +37,7 @@ viewIf : Bool -> Html msg -> Html msg
 viewIf condition content =
     if condition then
         content
+
     else
         empty
 

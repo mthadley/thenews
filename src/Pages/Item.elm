@@ -14,7 +14,6 @@ import Util.DateFormat as DateFormat
 import Util.Html
     exposing
         ( empty
-        , jsLink
         , pluralize
         , viewHtmlContent
         , viewIf
@@ -216,7 +215,7 @@ viewShowMore id count loading loadText =
 
 viewShowLink : Msg -> List (Html Msg) -> Html Msg
 viewShowLink msg =
-    Elements.showMore [ jsLink, onClick msg ]
+    Elements.showMore [ onClick msg ]
 
 
 getCommentsTitle : Item.Type -> String
