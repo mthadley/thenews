@@ -151,7 +151,7 @@ viewComments store comments ids =
         helper ( comment, item ) =
             Maybe.map (viewComment store comments item) comment
     in
-    Util.List.takeMaybe (RemoteData.toMaybe << Store.getItem store) ids
+    Util.List.takeMap (RemoteData.toMaybe << Store.getItem store) ids
         |> List.Extra.zip (getComments comments ids)
         |> List.filterMap helper
         |> Elements.commentLevel []
