@@ -1,8 +1,5 @@
 module App exposing (Model, Msg(..), init, subscriptions, update, view)
 
-import Animation
-import Animation.Messenger
-import Animation.Spring.Presets as Presets
 import Browser
 import Browser.Navigation exposing (Key)
 import Elements
@@ -25,12 +22,10 @@ import Views.Nav as Nav
 
 
 type alias Model =
-    { currentRoute : Route
-    , nextRoute : Route
+    { route : Route
     , page : Page
     , store : Store
     , key : Key
-    , style : Animation.Messenger.State Msg
     }
 
 
@@ -49,15 +44,10 @@ init _ url key =
 
         ( page, cmd, store ) =
             initPage route Store.init
-
-        style =
-            Animation.style <| animationProps In
     in
-    ( { currentRoute = route
-      , nextRoute = route
+    ( { route = route
       , key = key
       , page = page
-      , style = style
       , store = store
       }
     , cmd
@@ -122,7 +112,8 @@ view model =
         [ Elements.container []
             [ styles
             , Header.view
-            , content
+            , Nav.view model.route
+            , main_ [] [ content ]
             ]
         ]
             |> List.map Html.toUnstyled
@@ -130,28 +121,19 @@ view model =
 
 
 viewMain : Model -> ( String, Html Msg )
-viewMain { page, store, style } =
-    let
-        ( title, content ) =
-            case page of
-                CategoryPage model ->
-                    CategoryPage.view store model
+viewMain { page, store } =
+    case page of
+        CategoryPage model ->
+            CategoryPage.view store model
 
-                ItemPage model ->
-                    Tuple.mapSecond (Html.map ItemPageMsg) <| ItemPage.view store model
+        ItemPage model ->
+            Tuple.mapSecond (Html.map ItemPageMsg) <| ItemPage.view store model
 
-                UserPage model ->
-                    UserPage.view store model
+        UserPage model ->
+            UserPage.view store model
 
-                NotFoundPage ->
-                    NotFoundPage.view
-    in
-    ( title
-    , fromUnstyled <|
-        UnstyledHtml.main_ (Animation.render style)
-            [ toUnstyled content
-            ]
-    )
+        NotFoundPage ->
+            NotFoundPage.view
 
 
 
@@ -159,9 +141,7 @@ viewMain { page, store, style } =
 
 
 type Msg
-    = ActivateRoute Route
-    | AnimationMsg Animation.Msg
-    | StoreMsg (Action Msg)
+    = StoreMsg (Action Msg)
       -- Routing
     | UrlRequest Browser.UrlRequest
     | UrlChange Route
@@ -174,43 +154,26 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
+        ( UrlRequest urlRequest, _ ) ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Browser.Navigation.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Browser.Navigation.load href )
+
         ( UrlChange route, _ ) ->
-            ( if route == model.currentRoute then
-                model
-
-              else
-                { model
-                    | nextRoute = route
-                    , style =
-                        Animation.interrupt
-                            [ animate Out
-                            , Animation.Messenger.send <| ActivateRoute route
-                            ]
-                            model.style
-                }
-            , Cmd.none
-            )
-
-        ( ActivateRoute route, _ ) ->
             let
                 ( page, cmd, store ) =
                     initPage route model.store
             in
             ( { model
-                | currentRoute = route
+                | route = route
                 , page = page
                 , store = store
-                , style = Animation.interrupt [ animate In ] model.style
               }
             , cmd
             )
-
-        ( AnimationMsg animationMsg, _ ) ->
-            let
-                ( style, cmd ) =
-                    Animation.Messenger.update animationMsg model.style
-            in
-            ( { model | style = style }, cmd )
 
         ( StoreMsg action, _ ) ->
             let
@@ -256,30 +219,6 @@ update msg model =
             ( model, Cmd.none )
 
 
-type Direction
-    = In
-    | Out
-
-
-animate : Direction -> Animation.Messenger.Step Msg
-animate =
-    Animation.toWith (Animation.spring Presets.zippy) << animationProps
-
-
-animationProps : Direction -> List Animation.Property
-animationProps direction =
-    case direction of
-        In ->
-            [ Animation.opacity 1
-            , Animation.translate (Animation.px 0) (Animation.px 0)
-            ]
-
-        Out ->
-            [ Animation.opacity 0
-            , Animation.translate (Animation.px 0) (Animation.px 12)
-            ]
-
-
 updateStoreWith : (a -> Msg) -> Action a -> Store -> ( Store, Cmd Msg )
 updateStoreWith f action store =
     let
@@ -293,8 +232,8 @@ updateStoreWith f action store =
 -- SUBS
 
 
-getPageSub : Model -> Sub Msg
-getPageSub { page, store } =
+subscriptions : Model -> Sub Msg
+subscriptions { page, store } =
     case page of
         CategoryPage model ->
             Sub.map CategoryPageMsg <| CategoryPage.subscriptions store model
@@ -307,11 +246,3 @@ getPageSub { page, store } =
 
         NotFoundPage ->
             Sub.none
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch
-        [ Animation.subscription AnimationMsg [ model.style ]
-        , getPageSub model
-        ]

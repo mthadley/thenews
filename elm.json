@@ -17,13 +17,11 @@
             "elm-community/list-extra": "8.2.0",
             "joneshf/elm-tagged": "2.1.1",
             "krisajenkins/remotedata": "5.0.0",
-            "mdgriffith/elm-style-animation": "4.0.0",
+            "mthadley/elm-hash-routing": "1.0.1",
             "rtfeldman/elm-css": "16.0.1"
         },
         "indirect": {
             "Skinney/murmur3": "2.0.8",
-            "elm/bytes": "1.0.8",
-            "elm/file": "1.0.5",
             "elm/svg": "1.0.1",
             "elm/virtual-dom": "1.0.2",
             "rtfeldman/elm-hex": "1.0.0"
@@ -31,6 +29,9 @@
     },
     "test-dependencies": {
         "direct": {},
-        "indirect": {}
+        "indirect": {
+            "elm/bytes": "1.0.8",
+            "elm/file": "1.0.5"
+        }
     }
 }
