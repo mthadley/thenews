@@ -6,6 +6,9 @@ workflow "Main workflow" {
 action "build" {
   uses = "docker://node:10"
   args = "make all test"
+  env = {
+    ENVIRONMENT = "production"
+  }
 }
 
 action "is-branch-master" {

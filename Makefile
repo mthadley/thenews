@@ -1,3 +1,4 @@
+ENVIRONMENT = development
 OUT = dist
 ELM_MAIN = $(OUT)/elm.js
 ELM_FILES = $(shell find src -iname "*.elm")
@@ -5,8 +6,14 @@ ELM_FILES = $(shell find src -iname "*.elm")
 .PHONY: all
 all: $(ELM_MAIN) $(OUT)/index.html $(OUT)/index.js
 
+ifeq ($(ENVIRONMENT), production)
+CFLAGS = --optimize
+else
+CFLAGS = --debug
+endif
+
 $(ELM_MAIN): $(ELM_FILES) node_modules
-	yes | npx elm make src/Main.elm --output $@
+	yes | npx elm make src/Main.elm $(CFLAGS) --output $@
 
 $(OUT)/%: src/%
 	@cp $< $@
