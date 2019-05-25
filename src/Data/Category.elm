@@ -1,4 +1,6 @@
-module Data.Category exposing (Category(..), toString)
+module Data.Category exposing (Category(..), sorter, toString)
+
+import Sort
 
 
 type Category
@@ -30,3 +32,8 @@ toString category =
 
         Top ->
             "Top"
+
+
+sorter : Sort.Sorter Category
+sorter =
+    Sort.by toString Sort.alphabetical

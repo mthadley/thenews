@@ -22,8 +22,8 @@ import Api
 import Data.Category as Category exposing (Category)
 import Data.Item as Item exposing (Item)
 import Data.User as User exposing (User)
-import Dict exposing (Dict)
 import RemoteData exposing (RemoteData(..), WebData)
+import Sort.Dict
 import Tagged exposing (Tagged)
 import Tagged.Dict exposing (TaggedDict)
 import Task
@@ -32,7 +32,7 @@ import Util.Tuple exposing (mapSecond, mapThird)
 
 
 type alias Maps =
-    { categories : Dict String (WebData (List Item.Id))
+    { categories : Sort.Dict.Dict Category (WebData (List Item.Id))
     , items : TaggedDict Item.Ident Int (WebData Item)
     , users : TaggedDict User.Ident String (WebData User)
     , zone : Time.Zone
@@ -48,7 +48,7 @@ type Store
 init : ( Store, Cmd (Action msg) )
 init =
     ( Store
-        { categories = Dict.empty
+        { categories = Sort.Dict.empty Category.sorter
         , users = Tagged.Dict.empty
         , items = Tagged.Dict.empty
         , zone = Time.utc
@@ -131,7 +131,7 @@ update action ((Store maps) as store) =
             ( Store
                 { maps
                     | categories =
-                        Dict.update (Category.toString category) setLoading maps.categories
+                        Sort.Dict.update category setLoading maps.categories
                 }
             , Api.send (RecieveCategory category) <| Api.requestCategoryIds category
             , Cmd.none
@@ -141,8 +141,7 @@ update action ((Store maps) as store) =
             Store
                 { maps
                     | categories =
-                        Dict.insert
-                            (Category.toString category)
+                        Sort.Dict.insert category
                             (RemoteData.map (List.take pageSize) rawIds)
                             maps.categories
                 }
@@ -224,7 +223,7 @@ requestItem =
 getCategory : Store -> Category -> WebData (List Item.Id)
 getCategory (Store store) category =
     store.categories
-        |> Dict.get (Category.toString category)
+        |> Sort.Dict.get category
         |> Maybe.withDefault NotAsked
 
 
