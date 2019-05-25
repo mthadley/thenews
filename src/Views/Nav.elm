@@ -1,6 +1,6 @@
 module Views.Nav exposing (view)
 
-import Api exposing (Category)
+import Data.Category as Category exposing (Category)
 import Elements
 import Html.Styled exposing (..)
 import Router exposing (Route)
@@ -19,13 +19,13 @@ isActive route category =
 navLinks : List ( String, Category )
 navLinks =
     List.map
-        (\category -> ( Api.label category, category ))
-        [ Api.Top
-        , Api.Best
-        , Api.Show
-        , Api.New
-        , Api.Ask
-        , Api.Job
+        (\category -> ( Category.toString category, category ))
+        [ Category.Top
+        , Category.Best
+        , Category.Show
+        , Category.New
+        , Category.Ask
+        , Category.Job
         ]
 
 
@@ -42,6 +42,7 @@ viewNavItem route ( name, category ) =
         indicator =
             if isActive route category then
                 "*"
+
             else
                 " "
     in

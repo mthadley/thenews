@@ -1,6 +1,6 @@
 module Views.Header exposing (view)
 
-import Api
+import Data.Category as Category
 import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
@@ -21,7 +21,7 @@ view : Html msg
 view =
     Elements.header []
         [ Elements.headerAscii []
-            [ a [ Router.linkTo <| Router.View Api.Top ] [ text splash ]
+            [ a [ Router.linkTo <| Router.View Category.Top ] [ text splash ]
             ]
         , Elements.headerTagline []
             [ text "Thanks, "

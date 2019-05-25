@@ -1,9 +1,7 @@
 module Api exposing
-    ( Category(..)
-    , Task
+    ( Task
     , base
     , categoryEndpoint
-    , label
     , requestCategoryIds
     , requestItem
     , requestItems
@@ -13,6 +11,7 @@ module Api exposing
     , stringId
     )
 
+import Data.Category as Category exposing (Category(..))
 import Data.Item as Item exposing (Item)
 import Data.User as User exposing (User)
 import Http exposing (Request)
@@ -24,15 +23,6 @@ import Util.Json exposing (tag)
 
 type alias Task a =
     Task.Task Http.Error a
-
-
-type Category
-    = Ask
-    | Best
-    | Job
-    | New
-    | Show
-    | Top
 
 
 base : String
@@ -99,25 +89,3 @@ send msg =
 stringId : Category -> String
 stringId =
     categoryEndpoint
-
-
-label : Category -> String
-label category =
-    case category of
-        Ask ->
-            "Ask"
-
-        Best ->
-            "Best"
-
-        Job ->
-            "Job"
-
-        New ->
-            "New"
-
-        Show ->
-            "Show"
-
-        Top ->
-            "Top"

@@ -18,7 +18,8 @@ module Store exposing
     , update
     )
 
-import Api exposing (Category)
+import Api
+import Data.Category as Category exposing (Category)
 import Data.Item as Item exposing (Item)
 import Data.User as User exposing (User)
 import Dict exposing (Dict)
@@ -130,7 +131,7 @@ update action ((Store maps) as store) =
             ( Store
                 { maps
                     | categories =
-                        Dict.update (Api.label category) setLoading maps.categories
+                        Dict.update (Category.toString category) setLoading maps.categories
                 }
             , Api.send (RecieveCategory category) <| Api.requestCategoryIds category
             , Cmd.none
@@ -141,7 +142,7 @@ update action ((Store maps) as store) =
                 { maps
                     | categories =
                         Dict.insert
-                            (Api.label category)
+                            (Category.toString category)
                             (RemoteData.map (List.take pageSize) rawIds)
                             maps.categories
                 }
@@ -223,7 +224,7 @@ requestItem =
 getCategory : Store -> Category -> WebData (List Item.Id)
 getCategory (Store store) category =
     store.categories
-        |> Dict.get (Api.label category)
+        |> Dict.get (Category.toString category)
         |> Maybe.withDefault NotAsked
 
 

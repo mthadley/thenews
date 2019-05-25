@@ -1,6 +1,6 @@
 module Pages.Category exposing (Model, Msg(..), getCategoryItems, init, subscriptions, update, view, viewCategoryItem)
 
-import Api exposing (Category)
+import Data.Category as Category exposing (Category)
 import Data.Item as Item exposing (Item)
 import Elements
 import Html.Styled exposing (..)
@@ -38,7 +38,7 @@ view : Store -> Model -> ( String, Html msg )
 view store model =
     case getCategoryItems model.category store of
         Success items ->
-            ( Api.label model.category
+            ( Category.toString model.category
             , section [] <| List.indexedMap (viewCategoryItem (Store.getZone store)) items
             )
 
