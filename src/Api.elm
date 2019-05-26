@@ -8,7 +8,6 @@ module Api exposing
     , requestUrl
     , requestUser
     , send
-    , stringId
     )
 
 import Data.Category as Category exposing (Category(..))
@@ -68,11 +67,6 @@ requestItem id =
     get (requestUrl <| "item/" ++ String.fromInt id) Item.decode
 
 
-requestUrl : String -> String
-requestUrl endpoint =
-    base ++ endpoint ++ ".json"
-
-
 requestUser : String -> Task User
 requestUser id =
     get (requestUrl <| "user/" ++ id) User.decode
@@ -83,9 +77,9 @@ send msg =
     Task.attempt (msg << RemoteData.fromResult)
 
 
-stringId : Category -> String
-stringId =
-    categoryEndpoint
+requestUrl : String -> String
+requestUrl endpoint =
+    base ++ endpoint ++ ".json"
 
 
 get : String -> Decoder a -> Task a
