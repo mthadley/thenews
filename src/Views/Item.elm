@@ -54,8 +54,8 @@ view zone details item =
     Elements.item []
         [ Elements.itemHeader []
             [ spanOrLink item.url <| getTitle item ]
-        , viewIf (List.member TextContent details) <|
-            viewMaybe viewHtmlContent item.text
+        , viewIf (\() -> viewMaybe viewHtmlContent item.text)
+            (List.member TextContent details)
         , footer [] <| viewDetails zone item details
         ]
 

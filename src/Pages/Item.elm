@@ -179,12 +179,16 @@ viewComment store comments item { collapsed, showCount, loadText } =
                 ]
             ]
         , viewMaybe viewHtmlContent item.text
-        , viewIf (showCount > 0 && not loading) <| viewHider collapsed item.id
-        , viewIf (not collapsed) <|
-            div []
-                [ viewComments store comments visibleKids
-                , viewShowMore item.id (List.length kids - showCount) loading loadText
-                ]
+        , viewIf (\() -> viewHider collapsed item.id)
+            (showCount > 0 && not loading)
+        , viewIf
+            (\() ->
+                div []
+                    [ viewComments store comments visibleKids
+                    , viewShowMore item.id (List.length kids - showCount) loading loadText
+                    ]
+            )
+            (not collapsed)
         ]
 
 

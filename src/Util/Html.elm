@@ -33,10 +33,10 @@ viewHtmlContent content =
         []
 
 
-viewIf : Bool -> Html msg -> Html msg
-viewIf condition content =
+viewIf : (() -> Html msg) -> Bool -> Html msg
+viewIf f condition =
     if condition then
-        content
+        f ()
 
     else
         empty
