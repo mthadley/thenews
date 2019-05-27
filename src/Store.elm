@@ -34,7 +34,7 @@ import Time
 import Util.Tuple exposing (mapSecond, mapThird)
 
 
-type alias Maps =
+type alias Info =
     { categories : Sort.Dict.Dict Category (WebData (List Item.Id))
     , items : TaggedDict Item.Ident Int (WebData Item)
     , users : TaggedDict User.Ident String (WebData User)
@@ -46,7 +46,7 @@ type alias Maps =
 {-| A global store for cached data.
 -}
 type Store
-    = Store Maps
+    = Store Info
 
 
 init : Theme -> ( Store, Cmd (Action msg) )
@@ -78,7 +78,7 @@ type Action msg
 
 
 update : Action msg -> Store -> ( Store, Cmd (Action msg), Cmd msg )
-update action ((Store maps) as store) =
+update action ((Store info) as store) =
     case action of
         None ->
             noop store
@@ -111,33 +111,33 @@ update action ((Store maps) as store) =
 
         RequestUser id ->
             ( Store
-                { maps
-                    | users = Tagged.Dict.update id setLoading maps.users
+                { info
+                    | users = Tagged.Dict.update id setLoading info.users
                 }
             , Api.send (RecieveUser id) <| Api.requestUser <| Tagged.untag id
             , Cmd.none
             )
 
         RecieveUser id user ->
-            noop <| Store { maps | users = Tagged.Dict.insert id user maps.users }
+            noop <| Store { info | users = Tagged.Dict.insert id user info.users }
 
         RequestItem id ->
             ( Store
-                { maps
-                    | items = Tagged.Dict.update id setLoading maps.items
+                { info
+                    | items = Tagged.Dict.update id setLoading info.items
                 }
             , fetchItem id
             , Cmd.none
             )
 
         RecieveItem id data ->
-            noop <| Store { maps | items = Tagged.Dict.insert id data maps.items }
+            noop <| Store { info | items = Tagged.Dict.insert id data info.items }
 
         RequestCategory category ->
             ( Store
-                { maps
+                { info
                     | categories =
-                        Sort.Dict.update category setLoading maps.categories
+                        Sort.Dict.update category setLoading info.categories
                 }
             , Api.send (RecieveCategory category) <| Api.requestCategoryIds category
             , Cmd.none
@@ -145,19 +145,19 @@ update action ((Store maps) as store) =
 
         RecieveCategory category rawIds ->
             Store
-                { maps
+                { info
                     | categories =
                         Sort.Dict.insert category
                             (RemoteData.map (List.take pageSize) rawIds)
-                            maps.categories
+                            info.categories
                 }
                 |> noop
 
         RecieveTimeZone zone ->
-            Store { maps | zone = zone } |> noop
+            Store { info | zone = zone } |> noop
 
         RecieveTheme theme ->
-            Store { maps | theme = theme } |> noop
+            Store { info | theme = theme } |> noop
 
 
 none : Action msg
@@ -308,7 +308,7 @@ noop a =
 
 
 get :
-    (Maps -> TaggedDict k comparable (WebData a))
+    (Info -> TaggedDict k comparable (WebData a))
     -> Store
     -> Tagged k comparable
     -> WebData a
