@@ -1,7 +1,7 @@
 module Pages.Item exposing (Model, Msg, init, subscriptions, update, view)
 
+import Css exposing (num, pct, px, zero)
 import Data.Item as Item exposing (Item)
-import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Events exposing (onClick)
 import List.Extra
@@ -10,6 +10,7 @@ import Router exposing (Route)
 import Store exposing (Action, Store)
 import Tagged
 import Tagged.Dict as Dict exposing (TaggedDict)
+import Theme
 import Util.DateFormat as DateFormat
 import Util.Html
     exposing
@@ -150,11 +151,29 @@ viewComments store comments ids =
     let
         helper ( comment, item ) =
             Maybe.map (viewComment store comments item) comment
+
+        theme =
+            Store.getTheme store
     in
     Util.List.takeMap (RemoteData.toMaybe << Store.getItem store) ids
         |> List.Extra.zip (getComments comments ids)
         |> List.filterMap helper
-        |> Elements.commentLevel (Store.getTheme store) []
+        |> styled div
+            [ Css.marginLeft (px Theme.commentLevelMargin)
+            , Css.position Css.relative
+            , Css.after
+                [ Css.backgroundColor (Theme.colors theme).primary
+                , Theme.termShadow theme
+                , Css.property "content" "''"
+                , Css.height <| pct 100
+                , Css.left <| px (-1 * Theme.commentLevelMargin)
+                , Css.opacity <| num 0.8
+                , Css.position Css.absolute
+                , Css.top zero
+                , Css.width <| px 2
+                ]
+            ]
+            []
 
 
 viewComment : Store -> Comments -> Item -> Comment -> Html Msg
@@ -169,8 +188,14 @@ viewComment store comments item { collapsed, showCount, loadText } =
         loading =
             RemoteData.isLoading <| Store.getItems store visibleKids
     in
-    Elements.comment []
-        [ Elements.author []
+    styled article
+        [ Css.fontSize Theme.fontSizes.comment
+        , Css.marginBottom <| px 40
+        ]
+        []
+        [ styled h3
+            [ Css.fontStyle Css.italic ]
+            []
             [ a [ Router.linkTo <| Router.ViewUser item.by ]
                 [ text <| Tagged.untag item.by ]
             , small []
@@ -219,7 +244,17 @@ viewShowMore id count loading loadText =
 
 viewShowLink : Msg -> List (Html Msg) -> Html Msg
 viewShowLink msg =
-    Elements.showMore [ onClick msg ]
+    styled button
+        [ Css.backgroundColor Css.transparent
+        , Css.borderWidth Css.zero
+        , Css.fontWeight Css.bold
+        , Css.color Css.inherit
+        , Css.fontSize Css.inherit
+        , Css.fontFamily Css.inherit
+        , Css.textShadow Css.inherit
+        , Css.padding Css.zero
+        ]
+        [ onClick msg ]
 
 
 getCommentsTitle : Item.Type -> String

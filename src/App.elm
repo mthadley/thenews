@@ -2,7 +2,7 @@ module App exposing (Flags, Model, Msg(..), init, subscriptions, update, view)
 
 import Browser
 import Browser.Navigation exposing (Key)
-import Elements
+import Css exposing (px)
 import Html as UnstyledHtml
 import Html.Styled as Html exposing (..)
 import Json.Decode as Decode exposing (Decoder)
@@ -128,7 +128,12 @@ view model =
     in
     { title = "TheNews: " ++ title
     , body =
-        [ Elements.container []
+        [ styled div
+            [ Css.margin2 Css.zero Css.auto
+            , Css.maxWidth <| px 768
+            , Css.padding <| px 8
+            ]
+            []
             [ styles theme
             , Header.view
             , Nav.view theme model.route

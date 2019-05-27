@@ -1,7 +1,7 @@
 module Views.Item exposing (by, comments, created, score, textContent, view)
 
+import Css exposing (px)
 import Data.Item exposing (Item, Type(..))
-import Elements
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Router
@@ -51,8 +51,13 @@ type alias Detail =
 
 view : Time.Zone -> List DetailType -> Item -> Html msg
 view zone details item =
-    Elements.item []
-        [ Elements.itemHeader []
+    styled article
+        [ Css.marginBottom <| px 16 ]
+        []
+        [ styled h2
+            [ Css.margin3 Css.zero Css.zero <| px 12
+            ]
+            []
             [ spanOrLink item.url <| getTitle item ]
         , viewIf (\() -> viewMaybe viewHtmlContent item.text)
             (List.member TextContent details)

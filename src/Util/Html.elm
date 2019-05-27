@@ -6,7 +6,7 @@ module Util.Html exposing
     , viewMaybe
     )
 
-import Elements
+import Css exposing (px)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Json.Encode as Encode
@@ -28,7 +28,10 @@ pluralize singular plural count =
 
 viewHtmlContent : String -> Html msg
 viewHtmlContent content =
-    Elements.htmlContent
+    styled (node "post-content")
+        [ Css.marginBottom <| px 12
+        , Css.display Css.block
+        ]
         [ Attr.property "content" <| Encode.string content ]
         []
 

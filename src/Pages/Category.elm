@@ -1,8 +1,8 @@
 module Pages.Category exposing (Model, Msg(..), getCategoryItems, init, subscriptions, update, view, viewCategoryItem)
 
+import Css exposing (px)
 import Data.Category as Category exposing (Category)
 import Data.Item as Item exposing (Item)
-import Elements
 import Html.Styled exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Store exposing (Action, Store)
@@ -51,8 +51,16 @@ view store model =
 
 viewCategoryItem : Time.Zone -> Int -> Item -> Html msg
 viewCategoryItem zone rank item =
-    Elements.categoryItem []
-        [ Elements.itemRank [] [ text <| "#" ++ (String.fromInt <| 1 + rank) ]
+    styled div
+        [ Css.displayFlex ]
+        []
+        [ styled div
+            [ Css.flexShrink Css.zero
+            , Css.fontSize (px 18)
+            , Css.width (px 48)
+            ]
+            []
+            [ text <| "#" ++ (String.fromInt <| 1 + rank) ]
         , ItemView.view zone
             [ ItemView.by
             , ItemView.score

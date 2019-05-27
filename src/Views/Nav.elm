@@ -1,7 +1,7 @@
 module Views.Nav exposing (view)
 
+import Css exposing (px)
 import Data.Category as Category exposing (Category)
-import Elements
 import Html.Styled exposing (..)
 import Router exposing (Route)
 import Theme exposing (Theme)
@@ -32,9 +32,20 @@ navLinks =
 
 view : Theme -> Route -> Html msg
 view theme route =
-    Elements.nav theme
+    styled nav
+        [ Css.backgroundColor (Theme.colors theme).primary
+        , Theme.termShadow theme
+        , Css.whiteSpace Css.pre
+        ]
         []
-        [ Elements.navList [] <| List.map (viewNavItem theme route) navLinks
+        [ styled ul
+            [ Css.displayFlex
+            , Css.flexWrap Css.wrap
+            , Css.listStyle Css.none
+            , Css.paddingLeft <| px 48
+            ]
+            []
+            (List.map (viewNavItem theme route) navLinks)
         ]
 
 
@@ -49,7 +60,10 @@ viewNavItem theme route ( name, category ) =
                 " "
     in
     li []
-        [ Elements.navLink theme
+        [ styled a
+            [ Css.color (Theme.colors theme).secondary
+            , Css.marginRight <| px 8
+            ]
             [ Router.linkTo <| Router.View category ]
             [ text <| indicator ++ name ]
         ]
