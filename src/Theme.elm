@@ -61,4 +61,4 @@ termShadow theme =
 
 termShadowText : Theme -> Style
 termShadowText theme =
-    textShadow4 (px 0) (px 0) (px 4) (colors theme).primary
+    textShadow4 (px 0) (px 0) (px 2) (colors theme).primary
