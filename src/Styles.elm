@@ -3,17 +3,21 @@ module Styles exposing (styles)
 import Css exposing (..)
 import Css.Global exposing (..)
 import Html.Styled exposing (Html)
-import Theme exposing (colors, fontSizes, termShadowText)
+import Theme exposing (Theme, fontSizes, termShadowText)
 
 
-styles : Html msg
-styles =
+styles : Theme -> Html msg
+styles theme =
+    let
+        { primary, secondary } =
+            Theme.colors theme
+    in
     global
         [ everything
             [ boxSizing borderBox
             ]
         , a
-            [ color colors.primary
+            [ color primary
             , textDecoration none
             , property "transition" "opacity 0.4s ease"
             , hover
@@ -21,15 +25,15 @@ styles =
                 ]
             ]
         , body
-            [ backgroundColor colors.secondary
-            , color colors.primary
+            [ backgroundColor secondary
+            , color primary
             , fontFamily monospace
             , fontSize fontSizes.base
             , margin zero
             , minHeight <| vh 100
             , position relative
-            , termShadowText
-            , property "-webkit-tap-highlight-color" colors.primary.value
+            , termShadowText theme
+            , property "-webkit-tap-highlight-color" primary.value
             , before
                 [ backgroundImage <|
                     linearGradient

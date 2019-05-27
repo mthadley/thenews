@@ -25,6 +25,25 @@ customElements.define(
 );
 
 /**
+ * Convert to a Theme string that Elm expects.
+ * @param {boolean} prefersDark - If the browser prefers a dark theme
+ * @return {string}
+ */
+function toTheme(prefersDark) {
+  return prefersDark ? 'dark' : 'light';
+}
+
+const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
+
+/**
  * Start the App!
  */
-Elm.Main.init();
+const app = Elm.Main.init({
+  flags: {
+    theme: toTheme(mediaQueryList.matches),
+  },
+});
+
+mediaQueryList.addEventListener('change', event => {
+  app.ports.currentTheme.send(toTheme(event.matches));
+});

@@ -4,6 +4,7 @@ import Data.Category as Category exposing (Category)
 import Elements
 import Html.Styled exposing (..)
 import Router exposing (Route)
+import Theme exposing (Theme)
 
 
 isActive : Route -> Category -> Bool
@@ -29,15 +30,16 @@ navLinks =
         ]
 
 
-view : Route -> Html msg
-view route =
-    Elements.nav []
-        [ Elements.navList [] <| List.map (viewNavItem route) navLinks
+view : Theme -> Route -> Html msg
+view theme route =
+    Elements.nav theme
+        []
+        [ Elements.navList [] <| List.map (viewNavItem theme route) navLinks
         ]
 
 
-viewNavItem : Route -> ( String, Category ) -> Html msg
-viewNavItem route ( name, category ) =
+viewNavItem : Theme -> Route -> ( String, Category ) -> Html msg
+viewNavItem theme route ( name, category ) =
     let
         indicator =
             if isActive route category then
@@ -47,6 +49,7 @@ viewNavItem route ( name, category ) =
                 " "
     in
     li []
-        [ Elements.navLink [ Router.linkTo <| Router.View category ]
+        [ Elements.navLink theme
+            [ Router.linkTo <| Router.View category ]
             [ text <| indicator ++ name ]
         ]

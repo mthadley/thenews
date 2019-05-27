@@ -1,12 +1,12 @@
 module Main exposing (main)
 
-import App exposing (Model, Msg, init, subscriptions, update, view)
+import App exposing (Flags, Model, Msg, init, subscriptions, update, view)
 import Browser.Hash
 import Html.Styled exposing (toUnstyled)
 import Router
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
     Browser.Hash.application
         { init = init

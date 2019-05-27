@@ -1,10 +1,11 @@
-module App exposing (Model, Msg(..), init, subscriptions, update, view)
+module App exposing (Flags, Model, Msg(..), init, subscriptions, update, view)
 
 import Browser
 import Browser.Navigation exposing (Key)
 import Elements
 import Html as UnstyledHtml
 import Html.Styled as Html exposing (..)
+import Json.Decode as Decode exposing (Decoder)
 import Pages.Category as CategoryPage
 import Pages.Item as ItemPage
 import Pages.NotFound as NotFoundPage
@@ -12,9 +13,18 @@ import Pages.User as UserPage
 import Router exposing (Route)
 import Store exposing (Action, Store)
 import Styles exposing (styles)
+import Theme
 import Url exposing (Url)
 import Views.Header as Header
 import Views.Nav as Nav
+
+
+
+-- FLAGS
+
+
+type alias Flags =
+    { theme : String }
 
 
 
@@ -36,14 +46,17 @@ type Page
     | NotFoundPage
 
 
-init : flags -> Url -> Key -> ( Model, Cmd Msg )
-init _ url key =
+init : Flags -> Url -> Key -> ( Model, Cmd Msg )
+init flags url key =
     let
         route =
             Router.parse url
 
         ( store, storeCmd ) =
-            Store.init
+            flags.theme
+                |> Theme.fromString
+                |> Maybe.withDefault Theme.Dark
+                |> Store.init
 
         ( page, cmd, newStore ) =
             initPage route store
@@ -109,13 +122,16 @@ view model =
     let
         ( title, content ) =
             viewMain model
+
+        theme =
+            Store.getTheme model.store
     in
     { title = "TheNews: " ++ title
     , body =
         [ Elements.container []
-            [ styles
+            [ styles theme
             , Header.view
-            , Nav.view model.route
+            , Nav.view theme model.route
             , main_ [] [ content ]
             ]
         ]
@@ -235,8 +251,8 @@ updateStoreWith f action store =
 -- SUBS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions { page, store } =
+pageSubs : Model -> Sub Msg
+pageSubs { page, store } =
     case page of
         CategoryPage model ->
             Sub.map CategoryPageMsg <| CategoryPage.subscriptions store model
@@ -249,3 +265,11 @@ subscriptions { page, store } =
 
         NotFoundPage ->
             Sub.none
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ pageSubs model
+        , Sub.map StoreMsg Store.subscriptions
+        ]

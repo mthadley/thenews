@@ -154,7 +154,7 @@ viewComments store comments ids =
     Util.List.takeMap (RemoteData.toMaybe << Store.getItem store) ids
         |> List.Extra.zip (getComments comments ids)
         |> List.filterMap helper
-        |> Elements.commentLevel []
+        |> Elements.commentLevel (Store.getTheme store) []
 
 
 viewComment : Store -> Comments -> Item -> Comment -> Html Msg

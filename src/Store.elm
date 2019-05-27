@@ -1,10 +1,11 @@
-module Store exposing
+port module Store exposing
     ( Action
     , Store
     , batch
     , getCategory
     , getItem
     , getItems
+    , getTheme
     , getUser
     , getZone
     , init
@@ -14,6 +15,7 @@ module Store exposing
     , requestCategory
     , requestItem
     , requestUser
+    , subscriptions
     , tag
     , update
     )
@@ -27,6 +29,7 @@ import Sort.Dict
 import Tagged exposing (Tagged)
 import Tagged.Dict exposing (TaggedDict)
 import Task
+import Theme exposing (Theme)
 import Time
 import Util.Tuple exposing (mapSecond, mapThird)
 
@@ -36,6 +39,7 @@ type alias Maps =
     , items : TaggedDict Item.Ident Int (WebData Item)
     , users : TaggedDict User.Ident String (WebData User)
     , zone : Time.Zone
+    , theme : Theme
     }
 
 
@@ -45,13 +49,14 @@ type Store
     = Store Maps
 
 
-init : ( Store, Cmd (Action msg) )
-init =
+init : Theme -> ( Store, Cmd (Action msg) )
+init theme =
     ( Store
         { categories = Sort.Dict.empty Category.sorter
         , users = Tagged.Dict.empty
         , items = Tagged.Dict.empty
         , zone = Time.utc
+        , theme = theme
         }
     , Task.perform RecieveTimeZone Time.here
     )
@@ -69,6 +74,7 @@ type Action msg
     | RequestCategory Category
     | RecieveCategory Category (WebData (List Item.Id))
     | RecieveTimeZone Time.Zone
+    | RecieveTheme Theme
 
 
 update : Action msg -> Store -> ( Store, Cmd (Action msg), Cmd msg )
@@ -148,9 +154,10 @@ update action ((Store maps) as store) =
                 |> noop
 
         RecieveTimeZone zone ->
-            Store
-                { maps | zone = zone }
-                |> noop
+            Store { maps | zone = zone } |> noop
+
+        RecieveTheme theme ->
+            Store { maps | theme = theme } |> noop
 
 
 none : Action msg
@@ -198,6 +205,9 @@ map f action =
 
         RecieveTimeZone zone ->
             RecieveTimeZone zone
+
+        RecieveTheme theme ->
+            RecieveTheme theme
 
 
 tag : msg -> Action msg -> Action msg
@@ -247,9 +257,30 @@ getZone (Store { zone }) =
     zone
 
 
+getTheme : Store -> Theme
+getTheme (Store { theme }) =
+    theme
+
+
+subscriptions : Sub (Action msg)
+subscriptions =
+    currentTheme <|
+        (Theme.fromString
+            >> Maybe.withDefault Theme.Dark
+            >> RecieveTheme
+        )
+
+
 pageSize : Int
 pageSize =
     10
+
+
+
+-- Ports
+
+
+port currentTheme : (String -> msg) -> Sub msg
 
 
 

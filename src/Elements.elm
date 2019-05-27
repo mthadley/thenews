@@ -5,7 +5,8 @@ import Css.Media as Media exposing (only, screen, withMedia)
 import Html.Styled as Html exposing (..)
 import Theme
     exposing
-        ( colors
+        ( Theme
+        , colors
         , commentLevelMargin
         , fontSizes
         , termShadow
@@ -31,14 +32,14 @@ comment =
         ]
 
 
-commentLevel : Element msg
-commentLevel =
+commentLevel : Theme -> Element msg
+commentLevel theme =
     styled Html.div
         [ marginLeft (px commentLevelMargin)
         , position relative
         , after
-            [ backgroundColor colors.primary
-            , termShadow
+            [ backgroundColor (colors theme).primary
+            , termShadow theme
             , property "content" "''"
             , height <| pct 100
             , left <| px (-1 * commentLevelMargin)
@@ -85,11 +86,11 @@ itemHeader =
     styled Html.h2 [ margin3 zero zero <| px 12 ]
 
 
-nav : Element msg
-nav =
+nav : Theme -> Element msg
+nav theme =
     styled Html.nav
-        [ backgroundColor colors.primary
-        , termShadow
+        [ backgroundColor (colors theme).primary
+        , termShadow theme
         , whiteSpace Css.pre
         ]
 
@@ -104,10 +105,10 @@ navList =
         ]
 
 
-navLink : Element msg
-navLink =
+navLink : Theme -> Element msg
+navLink theme =
     styled Html.a
-        [ color colors.secondary
+        [ color (colors theme).secondary
         , marginRight <| px 8
         ]
 
