@@ -62,15 +62,11 @@ viewCategoryItem zone rank item =
             []
             [ text <| "#" ++ (String.fromInt <| 1 + rank) ]
         , ItemView.view
-            { zone = zone
-            , details =
-                [ ItemView.by
-                , ItemView.score
-                , ItemView.comments
-                ]
-            , item = item
-            , toLinkClickMsg = ExternalLink
-            }
+            [ ItemView.by
+            , ItemView.score
+            , ItemView.comments
+            ]
+            item
         ]
 
 

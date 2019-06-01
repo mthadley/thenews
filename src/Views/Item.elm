@@ -12,51 +12,41 @@ import Util.DateFormat as DateFormat
 import Util.Html exposing (viewHtmlContent, viewIf, viewMaybe)
 
 
-type DetailType
+type DetailType msg
     = By
     | Score
     | Comments
-    | Created
-    | TextContent
+    | Created Time.Zone
+    | TextContent (String -> msg)
 
 
-by : DetailType
+by : DetailType msg
 by =
     By
 
 
-comments : DetailType
+comments : DetailType msg
 comments =
     Comments
 
 
-created : DetailType
+created : Time.Zone -> DetailType msg
 created =
     Created
 
 
-score : DetailType
+score : DetailType msg
 score =
     Score
 
 
-textContent : DetailType
+textContent : (String -> msg) -> DetailType msg
 textContent =
     TextContent
 
 
-type alias Detail =
-    ( String, Maybe String, Maybe String )
-
-
-view :
-    { zone : Time.Zone -- TODO move into created
-    , details : List DetailType
-    , item : Item
-    , toLinkClickMsg : String -> msg
-    }
-    -> Html msg
-view { zone, details, item, toLinkClickMsg } =
+view : List (DetailType msg) -> Item -> Html msg
+view details item =
     styled article
         [ Css.marginBottom <| px 16 ]
         []
@@ -65,14 +55,33 @@ view { zone, details, item, toLinkClickMsg } =
             ]
             []
             [ spanOrLink item.url <| getTitle item ]
-        , viewIf (\() -> viewMaybe (viewHtmlContent toLinkClickMsg) item.text)
-            (List.member TextContent details)
-        , footer [] <| viewDetails zone item details
+        , viewContent item.text details
+        , footer [] <| viewDetails item details
         ]
 
 
-getDetail : Time.Zone -> Item -> DetailType -> Detail
-getDetail zone item type_ =
+viewContent : Maybe String -> List (DetailType msg) -> Html msg
+viewContent maybeText details =
+    let
+        maybeToMsg =
+            List.head <|
+                List.filterMap
+                    (\detail ->
+                        case detail of
+                            TextContent toMsg ->
+                                Just toMsg
+
+                            _ ->
+                                Nothing
+                    )
+                    details
+    in
+    Maybe.map2 (\toMsg text -> viewHtmlContent toMsg text) maybeToMsg maybeText
+        |> Maybe.withDefault Util.Html.empty
+
+
+getDetail : Item -> DetailType msg -> ( String, Maybe String, Maybe String )
+getDetail item type_ =
     case type_ of
         By ->
             ( "By "
@@ -92,23 +101,23 @@ getDetail zone item type_ =
             , Just <| Router.reverse <| Router.ViewItem item.id
             )
 
-        Created ->
+        Created zone ->
             ( ""
             , Just <| DateFormat.format zone item.time
             , Nothing
             )
 
-        _ ->
+        TextContent _ ->
             ( "", Nothing, Nothing )
 
 
-viewDetails : Time.Zone -> Item -> List DetailType -> List (Html msg)
-viewDetails zone item =
+viewDetails : Item -> List (DetailType msg) -> List (Html msg)
+viewDetails item =
     let
         detail ( name, value, href ) =
             Maybe.map (spanOrLink href << (++) name) value
     in
-    List.intersperse (text " • ") << List.filterMap (detail << getDetail zone item)
+    List.intersperse (text " • ") << List.filterMap (detail << getDetail item)
 
 
 getTitle : Item -> String

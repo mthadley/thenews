@@ -66,18 +66,12 @@ viewSubmissions zone { loadText } items =
             case items of
                 Success items_ ->
                     List.map
-                        (\item ->
-                            ItemView.view
-                                { zone = zone
-                                , details =
-                                    [ ItemView.textContent
-                                    , ItemView.score
-                                    , ItemView.comments
-                                    , ItemView.created
-                                    ]
-                                , item = item
-                                , toLinkClickMsg = ExternalLink
-                                }
+                        (ItemView.view
+                            [ ItemView.textContent ExternalLink
+                            , ItemView.score
+                            , ItemView.comments
+                            , ItemView.created zone
+                            ]
                         )
                         items_
 

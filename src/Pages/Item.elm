@@ -98,15 +98,11 @@ view store model =
             ( getTitle item
             , div []
                 [ ItemView.view
-                    { zone = Store.getZone store
-                    , details =
-                        [ ItemView.textContent
-                        , ItemView.by
-                        , ItemView.score
-                        ]
-                    , item = item
-                    , toLinkClickMsg = ExternalLink
-                    }
+                    [ ItemView.textContent ExternalLink
+                    , ItemView.by
+                    , ItemView.score
+                    ]
+                    item
                 , viewCommentsContainer store model.comments item comment
                 ]
             )
