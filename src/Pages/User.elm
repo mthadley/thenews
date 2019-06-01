@@ -33,7 +33,7 @@ init user =
 -- VIEW
 
 
-view : Store -> Model -> ( String, Html msg )
+view : Store -> Model -> ( String, Html Msg )
 view store model =
     case Store.getUser store model.user of
         Success user ->
@@ -51,27 +51,33 @@ view store model =
             ( "Nothing...", text "There doesn't seem to be anything here." )
 
 
-viewUser : User -> Html msg
+viewUser : User -> Html Msg
 viewUser user =
     div []
         [ h3 [] [ text <| Tagged.untag user.id ]
-        , viewMaybe viewHtmlContent user.about
+        , viewMaybe (viewHtmlContent ExternalLink) user.about
         ]
 
 
-viewSubmissions : Time.Zone -> Model -> WebData (List Item) -> Html msg
+viewSubmissions : Time.Zone -> Model -> WebData (List Item) -> Html Msg
 viewSubmissions zone { loadText } items =
     let
         content =
             case items of
                 Success items_ ->
                     List.map
-                        (ItemView.view zone
-                            [ ItemView.textContent
-                            , ItemView.score
-                            , ItemView.comments
-                            , ItemView.created
-                            ]
+                        (\item ->
+                            ItemView.view
+                                { zone = zone
+                                , details =
+                                    [ ItemView.textContent
+                                    , ItemView.score
+                                    , ItemView.comments
+                                    , ItemView.created
+                                    ]
+                                , item = item
+                                , toLinkClickMsg = ExternalLink
+                                }
                         )
                         items_
 
@@ -94,6 +100,7 @@ viewSubmissions zone { loadText } items =
 type Msg
     = LoadTextMsg LoadText.Msg
     | RecieveUser
+    | ExternalLink String
 
 
 update : Store -> Msg -> Model -> ( Model, Action Msg )
@@ -110,6 +117,9 @@ update store msg model =
                 |> List.map Store.requestItem
                 |> Store.batch
                 |> Tuple.pair model
+
+        ExternalLink href ->
+            ( model, Store.navigate href )
 
 
 getUserItems : Store -> User.Id -> WebData (List Item)

@@ -49,8 +49,14 @@ type alias Detail =
     ( String, Maybe String, Maybe String )
 
 
-view : Time.Zone -> List DetailType -> Item -> Html msg
-view zone details item =
+view :
+    { zone : Time.Zone -- TODO move into created
+    , details : List DetailType
+    , item : Item
+    , toLinkClickMsg : String -> msg
+    }
+    -> Html msg
+view { zone, details, item, toLinkClickMsg } =
     styled article
         [ Css.marginBottom <| px 16 ]
         []
@@ -59,7 +65,7 @@ view zone details item =
             ]
             []
             [ spanOrLink item.url <| getTitle item ]
-        , viewIf (\() -> viewMaybe viewHtmlContent item.text)
+        , viewIf (\() -> viewMaybe (viewHtmlContent toLinkClickMsg) item.text)
             (List.member TextContent details)
         , footer [] <| viewDetails zone item details
         ]

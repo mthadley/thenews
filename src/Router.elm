@@ -1,5 +1,6 @@
-module Router exposing (Route(..), linkTo, parse, redirectExternal, reverse)
+module Router exposing (Route(..), linkTo, parse, parseExternal, redirectExternal, reverse)
 
+import Browser.Navigation as Navigation
 import Data.Category exposing (Category(..))
 import Data.Item as Item
 import Data.User as User
@@ -39,8 +40,8 @@ parse =
     Maybe.withDefault NotFound << Url.parse parser
 
 
-redirectExternal : String -> Maybe Route
-redirectExternal href =
+parseExternal : String -> Maybe Route
+parseExternal href =
     let
         withRequired route p =
             Url.map (Maybe.map (route << Tagged.tag)) <| p
@@ -67,6 +68,16 @@ redirectExternal href =
     in
     Url.fromString href
         |> Maybe.andThen parseExternalRoute
+
+
+redirectExternal : Navigation.Key -> String -> Cmd msg
+redirectExternal key href =
+    case parseExternal href of
+        Just internalRoute ->
+            Navigation.pushUrl key (reverse internalRoute)
+
+        Nothing ->
+            Navigation.load href
 
 
 reverse : Route -> String

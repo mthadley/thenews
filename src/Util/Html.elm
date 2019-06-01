@@ -1,7 +1,6 @@
-port module Util.Html exposing
+module Util.Html exposing
     ( empty
     , pluralize
-    , postContentLinkClicks
     , viewHtmlContent
     , viewIf
     , viewMaybe
@@ -11,6 +10,8 @@ import Css exposing (px)
 import Css.Global as Global
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
+import Html.Styled.Events as Events
+import Json.Decode as Decode
 import Json.Encode as Encode
 
 
@@ -28,8 +29,13 @@ pluralize singular plural count =
         singular
 
 
-viewHtmlContent : String -> Html msg
-viewHtmlContent content =
+viewHtmlContent : (String -> msg) -> String -> Html msg
+viewHtmlContent toLinkClickMsg content =
+    let
+        clickDecoder =
+            Decode.at [ "target", "href" ] Decode.string
+                |> Decode.map (\href -> ( toLinkClickMsg href, True ))
+    in
     styled (node "post-content")
         [ Css.marginBottom <| px 12
         , Css.display Css.block
@@ -40,7 +46,9 @@ viewHtmlContent content =
                 ]
             ]
         ]
-        [ Attr.property "content" <| Encode.string content ]
+        [ Attr.property "content" <| Encode.string content
+        , Events.preventDefaultOn "click" clickDecoder
+        ]
         []
 
 
@@ -56,6 +64,3 @@ viewIf f condition =
 viewMaybe : (a -> Html msg) -> Maybe a -> Html msg
 viewMaybe f =
     Maybe.withDefault empty << Maybe.map f
-
-
-port postContentLinkClicks : (String -> msg) -> Sub msg

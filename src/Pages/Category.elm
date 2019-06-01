@@ -34,7 +34,7 @@ init category =
 -- VIEW
 
 
-view : Store -> Model -> ( String, Html msg )
+view : Store -> Model -> ( String, Html Msg )
 view store model =
     case getCategoryItems model.category store of
         Success items ->
@@ -49,7 +49,7 @@ view store model =
             ( "Nothing...", text "There doesn't seem to be anything here." )
 
 
-viewCategoryItem : Time.Zone -> Int -> Item -> Html msg
+viewCategoryItem : Time.Zone -> Int -> Item -> Html Msg
 viewCategoryItem zone rank item =
     styled div
         [ Css.displayFlex ]
@@ -61,12 +61,16 @@ viewCategoryItem zone rank item =
             ]
             []
             [ text <| "#" ++ (String.fromInt <| 1 + rank) ]
-        , ItemView.view zone
-            [ ItemView.by
-            , ItemView.score
-            , ItemView.comments
-            ]
-            item
+        , ItemView.view
+            { zone = zone
+            , details =
+                [ ItemView.by
+                , ItemView.score
+                , ItemView.comments
+                ]
+            , item = item
+            , toLinkClickMsg = ExternalLink
+            }
         ]
 
 
@@ -77,6 +81,7 @@ viewCategoryItem zone rank item =
 type Msg
     = LoadTextMsg LoadText.Msg
     | RecieveCategory
+    | ExternalLink String
 
 
 update : Store -> Msg -> Model -> ( Model, Action Msg )
@@ -95,6 +100,9 @@ update store msg model =
                 |> List.map Store.requestItem
                 |> Store.batch
                 |> Tuple.pair model
+
+        ExternalLink href ->
+            ( model, Store.navigate href )
 
 
 getCategoryItems : Category -> Store -> WebData (List Item)

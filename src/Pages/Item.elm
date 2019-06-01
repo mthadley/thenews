@@ -97,12 +97,16 @@ view store model =
         ( Success item, Just comment ) ->
             ( getTitle item
             , div []
-                [ ItemView.view (Store.getZone store)
-                    [ ItemView.textContent
-                    , ItemView.by
-                    , ItemView.score
-                    ]
-                    item
+                [ ItemView.view
+                    { zone = Store.getZone store
+                    , details =
+                        [ ItemView.textContent
+                        , ItemView.by
+                        , ItemView.score
+                        ]
+                    , item = item
+                    , toLinkClickMsg = ExternalLink
+                    }
                 , viewCommentsContainer store model.comments item comment
                 ]
             )
@@ -206,7 +210,7 @@ viewComment store comments item { collapsed, showCount, loadText } =
                     ]
                 ]
             ]
-        , viewMaybe viewHtmlContent item.text
+        , viewMaybe (viewHtmlContent ExternalLink) item.text
         , viewIf (\() -> viewHider collapsed item.id)
             (showCount > 0 && not loading)
         , viewIf
@@ -284,6 +288,7 @@ type Msg
     | CommentLoadTextMsg Item.Id LoadText.Msg
     | ToggleHide Item.Id
     | RecieveItem Item.Id Bool
+    | ExternalLink String
 
 
 update : Store -> Msg -> Model -> ( Model, Action Msg )
@@ -322,6 +327,9 @@ update store msg model =
             ( { model | comments = newComments }
             , action
             )
+
+        ExternalLink href ->
+            ( model, Store.navigate href )
 
 
 updateComment : (Comment -> Comment) -> Item.Id -> Comments -> Comments

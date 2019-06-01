@@ -16,7 +16,6 @@ import Store exposing (Action, Store)
 import Styles exposing (styles)
 import Theme exposing (Theme)
 import Url exposing (Url)
-import Util.Html
 import Views.Header as Header
 import Views.Nav as Nav
 
@@ -61,7 +60,7 @@ init flags url key =
                 |> Store.init
 
         ( page, cmd, newStore ) =
-            initPage route store
+            initPage key route store
     in
     ( { route = route
       , key = key
@@ -72,8 +71,8 @@ init flags url key =
     )
 
 
-initPage : Route -> Store -> ( Page, Cmd Msg, Store )
-initPage route store =
+initPage : Key -> Route -> Store -> ( Page, Cmd Msg, Store )
+initPage key route store =
     let
         ( page, action ) =
             case route of
@@ -104,7 +103,7 @@ initPage route store =
                     ( NotFoundPage, Store.none )
 
         ( newStore, storeCmd, outCmd ) =
-            Store.update action store
+            Store.update key action store
     in
     ( page
     , Cmd.batch
@@ -159,13 +158,13 @@ viewMain : Model -> ( String, Html Msg )
 viewMain { page, store } =
     case page of
         CategoryPage model ->
-            CategoryPage.view store model
+            Tuple.mapSecond (Html.map CategoryPageMsg) <| CategoryPage.view store model
 
         ItemPage model ->
             Tuple.mapSecond (Html.map ItemPageMsg) <| ItemPage.view store model
 
         UserPage model ->
-            UserPage.view store model
+            Tuple.mapSecond (Html.map UserPageMsg) <| UserPage.view store model
 
         NotFoundPage ->
             NotFoundPage.view
@@ -218,18 +217,13 @@ update msg model =
 
                 Browser.External href ->
                     ( model
-                    , case Router.redirectExternal href of
-                        Just internalRoute ->
-                            Navigation.pushUrl model.key (Router.reverse internalRoute)
-
-                        Nothing ->
-                            Navigation.load href
+                    , Router.redirectExternal model.key href
                     )
 
         ( UrlChange route, _ ) ->
             let
                 ( page, cmd, store ) =
-                    initPage route model.store
+                    initPage model.key route model.store
             in
             ( { model
                 | route = route
@@ -242,7 +236,7 @@ update msg model =
         ( StoreMsg action, _ ) ->
             let
                 ( store, cmd, outCmd ) =
-                    Store.update action model.store
+                    Store.update model.key action model.store
             in
             ( { model | store = store }
             , Cmd.batch [ Cmd.map StoreMsg cmd, outCmd ]
@@ -254,7 +248,7 @@ update msg model =
                     CategoryPage.update model.store pageMsg pageModel
 
                 ( store, cmd ) =
-                    updateStoreWith CategoryPageMsg action model.store
+                    updateStoreWith model.key CategoryPageMsg action model.store
             in
             ( { model | page = CategoryPage newPageModel, store = store }, cmd )
 
@@ -264,7 +258,7 @@ update msg model =
                     UserPage.update model.store pageMsg pageModel
 
                 ( store, cmd ) =
-                    updateStoreWith UserPageMsg action model.store
+                    updateStoreWith model.key UserPageMsg action model.store
             in
             ( { model | page = UserPage newPageModel, store = store }, cmd )
 
@@ -274,7 +268,7 @@ update msg model =
                     ItemPage.update model.store pageMsg pageModel
 
                 ( store, cmd ) =
-                    updateStoreWith ItemPageMsg action model.store
+                    updateStoreWith model.key ItemPageMsg action model.store
             in
             ( { model | page = ItemPage newPageModel, store = store }, cmd )
 
@@ -283,11 +277,11 @@ update msg model =
             ( model, Cmd.none )
 
 
-updateStoreWith : (a -> Msg) -> Action a -> Store -> ( Store, Cmd Msg )
-updateStoreWith f action store =
+updateStoreWith : Key -> (a -> Msg) -> Action a -> Store -> ( Store, Cmd Msg )
+updateStoreWith key f action store =
     let
         ( newStore, cmd, outCmd ) =
-            Store.update (Store.map f action) store
+            Store.update key (Store.map f action) store
     in
     ( newStore, Cmd.batch [ Cmd.map StoreMsg cmd, outCmd ] )
 
@@ -315,7 +309,6 @@ pageSubs { page, store } =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Util.Html.postContentLinkClicks (UrlRequest << Browser.External)
-        , pageSubs model
+        [ pageSubs model
         , Sub.map StoreMsg Store.subscriptions
         ]

@@ -10,6 +10,7 @@ port module Store exposing
     , getZone
     , init
     , map
+    , navigate
     , none
     , pageSize
     , requestCategory
@@ -21,10 +22,12 @@ port module Store exposing
     )
 
 import Api
+import Browser.Navigation as Navigation exposing (Key)
 import Data.Category as Category exposing (Category)
 import Data.Item as Item exposing (Item)
 import Data.User as User exposing (User)
 import RemoteData exposing (RemoteData(..), WebData)
+import Router
 import Sort.Dict
 import Tagged exposing (Tagged)
 import Tagged.Dict exposing (TaggedDict)
@@ -67,6 +70,7 @@ type Action msg
     | Batch (List (Action msg))
     | Tagged msg (Action msg)
     | TaggedResult msg (Action msg)
+    | Navigate String
     | RecieveItem Item.Id (WebData Item)
     | RecieveUser User.Id (WebData User)
     | RequestItem Item.Id
@@ -77,20 +81,20 @@ type Action msg
     | RecieveTheme Theme
 
 
-update : Action msg -> Store -> ( Store, Cmd (Action msg), Cmd msg )
-update action ((Store info) as store) =
+update : Key -> Action msg -> Store -> ( Store, Cmd (Action msg), Cmd msg )
+update key action ((Store info) as store) =
     case action of
         None ->
             noop store
 
         Tagged msg action_ ->
-            update action_ store
+            update key action_ store
                 |> mapSecond (Cmd.map <| TaggedResult msg)
 
         TaggedResult msg action_ ->
             let
                 ( newStore, cmd, outCmd ) =
-                    update action_ store
+                    update key action_ store
             in
             ( newStore
             , cmd
@@ -103,11 +107,14 @@ update action ((Store info) as store) =
         Batch actions ->
             let
                 applyActions action_ ( store_, cmd, outCmd ) =
-                    update action_ store_
+                    update key action_ store_
                         |> mapSecond (\c -> Cmd.batch [ cmd, c ])
                         |> mapThird (\c -> Cmd.batch [ outCmd, c ])
             in
             List.foldl applyActions (noop store) actions
+
+        Navigate url ->
+            ( store, Cmd.none, Router.redirectExternal key url )
 
         RequestUser id ->
             ( Store
@@ -185,6 +192,9 @@ map f action =
         Batch actions ->
             Batch <| List.map (map f) actions
 
+        Navigate url ->
+            Navigate url
+
         RequestItem id ->
             RequestItem id
 
@@ -213,6 +223,11 @@ map f action =
 tag : msg -> Action msg -> Action msg
 tag =
     Tagged
+
+
+navigate : String -> Action msg
+navigate =
+    Navigate
 
 
 requestCategory : Category -> Action msg
