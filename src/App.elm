@@ -2,9 +2,10 @@ module App exposing (Flags, Model, Msg(..), init, subscriptions, update, view)
 
 import Browser
 import Browser.Navigation exposing (Key)
-import Css exposing (px)
+import Css exposing (num, px, vh, zero)
 import Html as UnstyledHtml
 import Html.Styled as Html exposing (..)
+import Html.Styled.Attributes as Attributes
 import Json.Decode as Decode exposing (Decoder)
 import Pages.Category as CategoryPage
 import Pages.Item as ItemPage
@@ -13,7 +14,7 @@ import Pages.User as UserPage
 import Router exposing (Route)
 import Store exposing (Action, Store)
 import Styles exposing (styles)
-import Theme
+import Theme exposing (Theme)
 import Url exposing (Url)
 import Views.Header as Header
 import Views.Nav as Nav
@@ -128,19 +129,28 @@ view model =
     in
     { title = "TheNews: " ++ title
     , body =
-        [ styled div
-            [ Css.margin2 Css.zero Css.auto
-            , Css.maxWidth <| px 768
-            , Css.padding <| px 8
+        List.map Html.toUnstyled
+            [ styled div
+                [ Css.margin2 Css.zero Css.auto
+                , Css.maxWidth <| px 768
+                , Css.padding <| px 8
+                , Css.displayFlex
+                , Css.flexDirection Css.column
+                , Css.minHeight (vh 100)
+                ]
+                []
+                [ styles theme
+                , div []
+                    [ Header.view
+                    , Nav.view theme model.route
+                    ]
+                , styled main_
+                    [ Css.flexGrow (num 1) ]
+                    []
+                    [ content ]
+                , viewFooter theme
+                ]
             ]
-            []
-            [ styles theme
-            , Header.view
-            , Nav.view theme model.route
-            , main_ [] [ content ]
-            ]
-        ]
-            |> List.map Html.toUnstyled
     }
 
 
@@ -158,6 +168,28 @@ viewMain { page, store } =
 
         NotFoundPage ->
             NotFoundPage.view
+
+
+viewFooter : Theme -> Html msg
+viewFooter theme =
+    let
+        colors =
+            Theme.colors theme
+    in
+    styled footer
+        [ Css.padding2 (px 0) zero
+        , Css.textAlign Css.center
+        , Css.position Css.relative
+        , Css.backgroundColor colors.primary
+        , Theme.termShadow theme
+        , Css.margin3 (px 30) zero (px 20)
+        ]
+        []
+        [ styled a
+            [ Css.color colors.secondary ]
+            [ Attributes.href "https://github.com/mthadley/thenews" ]
+            [ text "Github" ]
+        ]
 
 
 
