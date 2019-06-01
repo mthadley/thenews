@@ -7,6 +7,7 @@ module Util.Html exposing
     )
 
 import Css exposing (px)
+import Css.Global as Global
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Json.Encode as Encode
@@ -31,6 +32,12 @@ viewHtmlContent content =
     styled (node "post-content")
         [ Css.marginBottom <| px 12
         , Css.display Css.block
+        , Global.descendants
+            [ Global.pre
+                [ Css.overflow Css.hidden
+                , Css.textOverflow Css.ellipsis
+                ]
+            ]
         ]
         [ Attr.property "content" <| Encode.string content ]
         []
