@@ -1,6 +1,7 @@
-module Util.Html exposing
+port module Util.Html exposing
     ( empty
     , pluralize
+    , postContentLinkClicks
     , viewHtmlContent
     , viewIf
     , viewMaybe
@@ -55,3 +56,6 @@ viewIf f condition =
 viewMaybe : (a -> Html msg) -> Maybe a -> Html msg
 viewMaybe f =
     Maybe.withDefault empty << Maybe.map f
+
+
+port postContentLinkClicks : (String -> msg) -> Sub msg

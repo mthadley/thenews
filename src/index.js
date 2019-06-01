@@ -44,6 +44,23 @@ const app = Elm.Main.init({
   },
 });
 
+/**
+ * Listen for changes in the preffered system color scheme.
+ */
 mediaQueryList.addEventListener('change', event => {
   app.ports.currentTheme.send(toTheme(event.matches));
+});
+
+/**
+ * Listen for any clicks that happen inside of a `<post-content />`.
+ */
+document.body.addEventListener('click', event => {
+  const target = event.target;
+
+  if (
+    (target.nodeName = 'A' && target.closest('post-content') && !!target.href)
+  ) {
+    event.preventDefault();
+    app.ports.postContentLinkClicks.send(event.target.href);
+  }
 });

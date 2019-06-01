@@ -1,7 +1,7 @@
 module App exposing (Flags, Model, Msg(..), init, subscriptions, update, view)
 
 import Browser
-import Browser.Navigation exposing (Key)
+import Browser.Navigation as Navigation exposing (Key)
 import Css exposing (num, px, vh, zero)
 import Html as UnstyledHtml
 import Html.Styled as Html exposing (..)
@@ -16,6 +16,7 @@ import Store exposing (Action, Store)
 import Styles exposing (styles)
 import Theme exposing (Theme)
 import Url exposing (Url)
+import Util.Html
 import Views.Header as Header
 import Views.Nav as Nav
 
@@ -213,10 +214,17 @@ update msg model =
         ( UrlRequest urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Browser.Navigation.pushUrl model.key (Url.toString url) )
+                    ( model, Navigation.pushUrl model.key (Url.toString url) )
 
                 Browser.External href ->
-                    ( model, Browser.Navigation.load href )
+                    ( model
+                    , case Router.redirectExternal href of
+                        Just internalRoute ->
+                            Navigation.pushUrl model.key (Router.reverse internalRoute)
+
+                        Nothing ->
+                            Navigation.load href
+                    )
 
         ( UrlChange route, _ ) ->
             let
@@ -307,6 +315,7 @@ pageSubs { page, store } =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ pageSubs model
+        [ Util.Html.postContentLinkClicks (UrlRequest << Browser.External)
+        , pageSubs model
         , Sub.map StoreMsg Store.subscriptions
         ]

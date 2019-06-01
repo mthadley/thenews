@@ -1,13 +1,15 @@
-module Router exposing (Route(..), linkTo, parse, reverse)
+module Router exposing (Route(..), linkTo, parse, redirectExternal, reverse)
 
 import Data.Category exposing (Category(..))
 import Data.Item as Item
 import Data.User as User
 import Html.Styled as Html
 import Html.Styled.Attributes as Attr
+import Maybe.Extra
 import Tagged
 import Url exposing (Url)
-import Url.Parser as Url exposing ((</>), Parser)
+import Url.Parser as Url exposing ((</>), (<?>), Parser)
+import Url.Parser.Query as Query
 
 
 type Route
@@ -35,6 +37,36 @@ parser =
 parse : Url -> Route
 parse =
     Maybe.withDefault NotFound << Url.parse parser
+
+
+redirectExternal : String -> Maybe Route
+redirectExternal href =
+    let
+        withRequired route p =
+            Url.map (Maybe.map (route << Tagged.tag)) <| p
+
+        with route p =
+            Url.map (Just route) <| p
+
+        externalParser =
+            Url.oneOf
+                [ withRequired ViewItem <| Url.s "item" <?> Query.int "id"
+                , withRequired ViewUser <| Url.s "user" <?> Query.string "id"
+                , with (View Ask) <| Url.s "ask"
+                , with (View Show) <| Url.s "show"
+                , with (View Job) <| Url.s "jobs"
+                , with (View New) <| Url.s "newest"
+                ]
+
+        parseExternalRoute url =
+            if url.host == "news.ycombinator.com" then
+                Maybe.Extra.join <| Url.parse externalParser url
+
+            else
+                Nothing
+    in
+    Url.fromString href
+        |> Maybe.andThen parseExternalRoute
 
 
 reverse : Route -> String
