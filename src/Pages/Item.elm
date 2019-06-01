@@ -200,7 +200,10 @@ viewComment store comments item { collapsed, showCount, loadText } =
                 [ text <| Tagged.untag item.by ]
             , small []
                 [ text " on "
-                , time [] [ text <| DateFormat.format (Store.getZone store) item.time ]
+                , time []
+                    [ a [ Router.linkTo <| Router.ViewItem item.id ]
+                        [ text <| DateFormat.format (Store.getZone store) item.time ]
+                    ]
                 ]
             ]
         , viewMaybe viewHtmlContent item.text
