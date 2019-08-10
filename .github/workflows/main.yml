@@ -1,35 +1,9 @@
 on: push
 name: CI/CD
 jobs:
-  one:
-    runs-on: ubuntu-16.04
-    steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Dump strategy context
-        env:
-          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-        run: echo "$STRATEGY_CONTEXT"
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "$JOB_CONTEXT"
-      - name: Dump runner context
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "$RUNNER_CONTEXT"
-      - name: Dump steps context
-        env:
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "$STEPS_CONTEXT"
-  build:
-    runs-on: ubuntu-latest
+  ci:
+    name: Build and deploy
+    runs-on: ubuntu-18.04
     container: node:12
     steps:
     - uses: actions/checkout@master
@@ -37,28 +11,10 @@ jobs:
       run: make all test
       env:
         ENVIRONMENT: production
-    - name: is master branch?
-      uses: actions/bin/filter@master
-      with:
-       args: branch master
-    # - name: Upload dist artifact
-    #   if:
-    #   uses: actions/upload-artifact@1.0.0
-    #   with:
-    #     name: dist
-    #     path: ./dist
-  # deploy:
-    # needs: build
-    # if:
-    # runs-on: ubuntu-latest
-    # steps:
-    # - name: Download dist artifact
-    #   uses: actions/download-artifact@1.0.0
-    #   with:
-    #     name: dist
-    # - name: Deploy to github pages
-    #   uses: peaceiris/actions-gh-pages@v1.0.0
-    #   env:
-    #     ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-    #     PUBLISH_BRANCH: gh-pages
-    #     PUBLISH_DIR: ./dist
+    - name: Deploy
+      if: github.ref == 'refs/heads/master'
+      uses: peaceiris/actions-gh-pages@v1.0.0
+      env:
+        ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        PUBLISH_BRANCH: gh-pages
+        PUBLISH_DIR: ./dist
