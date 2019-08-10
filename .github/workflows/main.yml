@@ -1,0 +1,20 @@
+on: push
+name: CI/CD
+jobs:
+  ci:
+    name: Build and deploy
+    runs-on: ubuntu-18.04
+    container: node:12
+    steps:
+    - uses: actions/checkout@master
+    - name: Build and test
+      run: make all test
+      env:
+        ENVIRONMENT: production
+    - name: Deploy
+      if: github.ref == 'refs/heads/master'
+      uses: peaceiris/actions-gh-pages@v1.0.0
+      env:
+        ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        PUBLISH_BRANCH: gh-pages
+        PUBLISH_DIR: ./dist
