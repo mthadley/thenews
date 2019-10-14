@@ -44,10 +44,10 @@ parseExternal : String -> Maybe Route
 parseExternal href =
     let
         withRequired route p =
-            Url.map (Maybe.map (route << Tagged.tag)) <| p
+            Url.map (Maybe.map (route << Tagged.tag)) p
 
         with route p =
-            Url.map (Just route) <| p
+            Url.map (Just route) p
 
         externalParser =
             Url.oneOf
