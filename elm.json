@@ -15,7 +15,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm-community/list-extra": "8.2.2",
-            "elm-community/maybe-extra": "5.0.0",
+            "elm-community/maybe-extra": "5.1.0",
             "elm-explorations/test": "1.2.2",
             "joneshf/elm-tagged": "2.1.1",
             "krisajenkins/remotedata": "6.0.1",
