@@ -54,7 +54,7 @@ view details item =
             [ Css.margin3 Css.zero Css.zero <| px 12
             ]
             []
-            [ spanOrLink item.url <| getTitle item ]
+            [ a [ Attr.href item.url ] [ text (getTitle item) ] ]
         , viewContent item.text details
         , footer [] <| viewDetails item details
         ]

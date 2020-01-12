@@ -11,8 +11,9 @@ module Data.Item exposing
 
 import Data.Item.Id
 import Data.User as User
-import Json.Decode as Decode exposing (Decoder)
+import Json.Decode as Decode exposing (Decoder, field)
 import Json.Decode.Pipeline as Pipeline exposing (optional, required)
+import Router
 import Tagged exposing (Tagged)
 import Util.Json exposing (optionalMaybe, tag)
 
@@ -34,11 +35,11 @@ type Type
 
 
 type alias Item =
-    { by : User.Id
+    { id : Id
+    , by : User.Id
     , dead : Bool
     , deleted : Bool
     , descendants : Maybe Int
-    , id : Id
     , kids : Maybe (List Id)
     , parent : Maybe Id
     , parts : Maybe (List PollOpt)
@@ -47,7 +48,7 @@ type alias Item =
     , time : Int
     , title : Maybe String
     , type_ : Type
-    , url : Maybe String
+    , url : String
     }
 
 
@@ -63,21 +64,29 @@ type alias PollOpt =
 
 decode : Decoder Item
 decode =
-    Decode.succeed Item
-        |> optional "by" (tag Decode.string) (Tagged.tag "Deleted")
-        |> optional "dead" Decode.bool False
-        |> optional "deleted" Decode.bool False
-        |> optionalMaybe "descendants" Decode.int
-        |> required "id" (tag Decode.int)
-        |> optionalMaybe "kids" (Decode.list <| tag Decode.int)
-        |> optionalMaybe "parent" (tag Decode.int)
-        |> optionalMaybe "parts" (Decode.list pollOpt)
-        |> optionalMaybe "score" Decode.int
-        |> optionalMaybe "text" Decode.string
-        |> required "time" Decode.int
-        |> optionalMaybe "title" Decode.string
-        |> required "type" (Decode.map decodeType Decode.string)
-        |> optionalMaybe "url" Decode.string
+    field "id" (tag Decode.int)
+        |> Decode.andThen
+            (\id ->
+                Decode.succeed (Item id)
+                    |> optional "by" (tag Decode.string) (Tagged.tag "Deleted")
+                    |> optional "dead" Decode.bool False
+                    |> optional "deleted" Decode.bool False
+                    |> optionalMaybe "descendants" Decode.int
+                    |> optionalMaybe "kids" (Decode.list <| tag Decode.int)
+                    |> optionalMaybe "parent" (tag Decode.int)
+                    |> optionalMaybe "parts" (Decode.list pollOpt)
+                    |> optionalMaybe "score" Decode.int
+                    |> optionalMaybe "text" Decode.string
+                    |> required "time" Decode.int
+                    |> optionalMaybe "title" Decode.string
+                    |> required "type" (Decode.map decodeType Decode.string)
+                    |> optional "url" Decode.string (defaultItemUrl id)
+            )
+
+
+defaultItemUrl : Id -> String
+defaultItemUrl =
+    Router.reverse << Router.ViewItem
 
 
 decodeType : String -> Type

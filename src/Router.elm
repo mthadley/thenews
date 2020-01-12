@@ -2,7 +2,7 @@ module Router exposing (Route(..), linkTo, parse, parseExternal, redirectExterna
 
 import Browser.Navigation as Navigation
 import Data.Category exposing (Category(..))
-import Data.Item as Item
+import Data.Item.Id as Item
 import Data.User as User
 import Html.Styled as Html
 import Html.Styled.Attributes as Attr
