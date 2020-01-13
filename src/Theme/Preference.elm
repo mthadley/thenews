@@ -21,8 +21,8 @@ type Preference
 
 
 type Selection
-    = SelectTheme Theme
-    | SelectAuto
+    = SelectAuto
+    | SelectTheme Theme
 
 
 {-| Useful as a default value.
