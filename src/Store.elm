@@ -1,4 +1,4 @@
-port module Store exposing
+module Store exposing
     ( Action
     , Store
     , batch
@@ -6,6 +6,7 @@ port module Store exposing
     , getItem
     , getItems
     , getTheme
+    , getThemePreference
     , getUser
     , getZone
     , init
@@ -16,6 +17,7 @@ port module Store exposing
     , requestCategory
     , requestItem
     , requestUser
+    , setThemePreference
     , subscriptions
     , tag
     , update
@@ -33,6 +35,7 @@ import Tagged exposing (Tagged)
 import Tagged.Dict exposing (TaggedDict)
 import Task
 import Theme exposing (Theme)
+import Theme.Preference as ThemePreference
 import Time
 import Util.Tuple exposing (mapSecond, mapThird)
 
@@ -42,7 +45,7 @@ type alias Info =
     , items : TaggedDict Item.Ident Int (WebData Item)
     , users : TaggedDict User.Ident String (WebData User)
     , zone : Time.Zone
-    , theme : Theme
+    , themePreference : ThemePreference.Preference
     }
 
 
@@ -52,14 +55,14 @@ type Store
     = Store Info
 
 
-init : Theme -> ( Store, Cmd (Action msg) )
-init theme =
+init : ThemePreference.Preference -> ( Store, Cmd (Action msg) )
+init themePreference =
     ( Store
         { categories = Sort.Dict.empty Category.sorter
         , users = Tagged.Dict.empty
         , items = Tagged.Dict.empty
         , zone = Time.utc
-        , theme = theme
+        , themePreference = themePreference
         }
     , Task.perform RecieveTimeZone Time.here
     )
@@ -78,7 +81,8 @@ type Action msg
     | RequestCategory Category
     | RecieveCategory Category (WebData (List Item.Id))
     | RecieveTimeZone Time.Zone
-    | RecieveTheme Theme
+    | SetThemePreference ThemePreference.Selection
+    | RecieveThemePreference ThemePreference.Preference
 
 
 update : Key -> Action msg -> Store -> ( Store, Cmd (Action msg), Cmd msg )
@@ -163,8 +167,15 @@ update key action ((Store info) as store) =
         RecieveTimeZone zone ->
             Store { info | zone = zone } |> noop
 
-        RecieveTheme theme ->
-            Store { info | theme = theme } |> noop
+        SetThemePreference selection ->
+            let
+                ( newThemePreference, cmd ) =
+                    ThemePreference.select selection info.themePreference
+            in
+            ( Store { info | themePreference = newThemePreference }, cmd, Cmd.none )
+
+        RecieveThemePreference themePreference ->
+            Store { info | themePreference = themePreference } |> noop
 
 
 none : Action msg
@@ -216,8 +227,11 @@ map f action =
         RecieveTimeZone zone ->
             RecieveTimeZone zone
 
-        RecieveTheme theme ->
-            RecieveTheme theme
+        SetThemePreference selection ->
+            SetThemePreference selection
+
+        RecieveThemePreference themePreference ->
+            RecieveThemePreference themePreference
 
 
 tag : msg -> Action msg -> Action msg
@@ -243,6 +257,11 @@ requestUser =
 requestItem : Item.Id -> Action msg
 requestItem =
     RequestItem
+
+
+setThemePreference : ThemePreference.Selection -> Action msg
+setThemePreference =
+    SetThemePreference
 
 
 getCategory : Store -> Category -> WebData (List Item.Id)
@@ -273,29 +292,23 @@ getZone (Store { zone }) =
 
 
 getTheme : Store -> Theme
-getTheme (Store { theme }) =
-    theme
+getTheme =
+    ThemePreference.theme << getThemePreference
 
 
-subscriptions : Sub (Action msg)
-subscriptions =
-    currentTheme <|
-        (Theme.fromString
-            >> Maybe.withDefault Theme.Dark
-            >> RecieveTheme
-        )
+getThemePreference : Store -> ThemePreference.Preference
+getThemePreference (Store { themePreference }) =
+    themePreference
+
+
+subscriptions : Store -> Sub (Action msg)
+subscriptions (Store { themePreference }) =
+    Sub.map RecieveThemePreference (ThemePreference.subscriptions themePreference)
 
 
 pageSize : Int
 pageSize =
     10
-
-
-
--- Ports
-
-
-port currentTheme : (String -> msg) -> Sub msg
 
 
 

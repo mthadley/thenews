@@ -40,7 +40,8 @@ const mediaQueryList = matchMedia('(prefers-color-scheme: dark)');
  */
 const app = Elm.Main.init({
   flags: {
-    theme: toTheme(mediaQueryList.matches),
+    systemTheme: toTheme(mediaQueryList.matches),
+    themePreference: localStorage.getItem("theme")
   },
 });
 
@@ -51,3 +52,9 @@ mediaQueryList.addEventListener('change', event => {
   app.ports.currentTheme.send(toTheme(event.matches));
 });
 
+/**
+ * Update user's theme preference
+ */
+app.ports.setThemePreference.subscribe(theme => {
+  localStorage.setItem('theme', theme);
+})

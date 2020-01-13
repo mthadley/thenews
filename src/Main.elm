@@ -16,12 +16,14 @@ import Router exposing (Route)
 import Store exposing (Action, Store)
 import Styles exposing (styles)
 import Theme exposing (Theme)
+import Theme.Preference as ThemePreference
 import Url exposing (Url)
 import Views.Header as Header
 import Views.Nav as Nav
+import Views.ThemeSwitcher as ThemeSwitcher
 
 
-main : Program Flags Model Msg
+main : Program Decode.Value Model Msg
 main =
     Browser.Hash.application
         { init = init
@@ -31,14 +33,6 @@ main =
         , onUrlRequest = UrlRequest
         , onUrlChange = UrlChange << Router.parse
         }
-
-
-
--- FLAGS
-
-
-type alias Flags =
-    { theme : String }
 
 
 
@@ -60,16 +54,15 @@ type Page
     | NotFoundPage
 
 
-init : Flags -> Url -> Key -> ( Model, Cmd Msg )
-init flags url key =
+init : Decode.Value -> Url -> Key -> ( Model, Cmd Msg )
+init json url key =
     let
         route =
             Router.parse url
 
         ( store, storeCmd ) =
-            flags.theme
-                |> Theme.fromString
-                |> Maybe.withDefault Theme.Dark
+            Decode.decodeValue ThemePreference.decode json
+                |> Result.withDefault ThemePreference.none
                 |> Store.init
 
         ( page, cmd, newStore ) =
@@ -161,7 +154,7 @@ view model =
                     [ Css.flexGrow (num 1) ]
                     []
                     [ content ]
-                , viewFooter theme
+                , viewFooter model.store
                 ]
             ]
     }
@@ -183,14 +176,19 @@ viewMain { page, store } =
             NotFoundPage.view
 
 
-viewFooter : Theme -> Html msg
-viewFooter theme =
+viewFooter : Store -> Html Msg
+viewFooter store =
     let
+        theme =
+            Store.getTheme store
+
         colors =
             Theme.colors theme
     in
     styled footer
-        [ Css.padding2 (px 0) zero
+        [ Css.padding2 zero (px 48)
+        , Css.displayFlex
+        , Css.justifyContent Css.spaceBetween
         , Css.textAlign Css.center
         , Css.position Css.relative
         , Css.backgroundColor colors.primary
@@ -202,6 +200,8 @@ viewFooter theme =
             [ Css.color colors.secondary ]
             [ Attributes.href "https://github.com/mthadley/thenews" ]
             [ text "Github" ]
+        , ThemeSwitcher.view (Store.getThemePreference store)
+            |> Html.map (StoreMsg << Store.setThemePreference)
         ]
 
 
@@ -323,5 +323,5 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ pageSubs model
-        , Sub.map StoreMsg Store.subscriptions
+        , Sub.map StoreMsg (Store.subscriptions model.store)
         ]
