@@ -6,6 +6,7 @@ module Theme exposing
     , fromString
     , termShadow
     , termShadowText
+    , toString
     )
 
 import Css exposing (..)
@@ -28,6 +29,16 @@ fromString string =
 
         _ ->
             Nothing
+
+
+toString : Theme -> String
+toString theme =
+    case theme of
+        Light ->
+            "light"
+
+        Dark ->
+            "dark"
 
 
 colors : Theme -> { primary : Color, secondary : Color }
