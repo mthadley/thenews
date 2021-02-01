@@ -15,7 +15,7 @@
   },
   "homepage": "https://github.com/mthadley/thenews#readme",
   "dependencies": {
-    "elm": "^0.19.1-4",
+    "elm": "^0.19.1-5",
     "elm-format": "^0.8.4",
     "elm-test": "^0.19.1",
     "terser": "^5.5.1"
