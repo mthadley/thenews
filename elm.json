@@ -20,7 +20,7 @@
             "joneshf/elm-tagged": "2.1.1",
             "krisajenkins/remotedata": "6.0.1",
             "mthadley/elm-hash-routing": "1.0.1",
-            "rtfeldman/elm-css": "16.1.1",
+            "rtfeldman/elm-css": "17.0.0",
             "rtfeldman/elm-sorter-experiment": "2.1.1"
         },
         "indirect": {
