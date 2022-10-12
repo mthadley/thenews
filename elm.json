@@ -16,7 +16,7 @@
             "elm/url": "1.0.0",
             "elm-community/list-extra": "8.6.0",
             "elm-community/maybe-extra": "5.3.0",
-            "elm-explorations/test": "1.2.2",
+            "elm-explorations/test": "2.0.1",
             "joneshf/elm-tagged": "2.1.1",
             "krisajenkins/remotedata": "6.0.1",
             "mthadley/elm-hash-routing": "1.0.1",
