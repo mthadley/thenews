@@ -21,7 +21,7 @@
             "krisajenkins/remotedata": "6.0.1",
             "mthadley/elm-hash-routing": "1.0.1",
             "rtfeldman/elm-css": "18.0.0",
-            "rtfeldman/elm-sorter-experiment": "2.1.1"
+            "rtfeldman/elm-sorter-experiment": "2.1.2"
         },
         "indirect": {
             "elm/bytes": "1.0.8",
